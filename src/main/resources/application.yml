@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/flying_book
+    username: doston
+    password: doston123
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+
+bot:
+  username: flyingbookbot
+  token: 5385214787:AAFApRSAhZPr9-92m7kLHVgz0qNFXf9-gn4
