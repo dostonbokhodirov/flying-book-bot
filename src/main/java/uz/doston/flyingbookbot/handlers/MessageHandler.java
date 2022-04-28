@@ -2,15 +2,13 @@ package uz.doston.flyingbookbot.handlers;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import uz.doston.flyingbookbot.enums.AuthRole;
 import uz.doston.flyingbookbot.enums.MenuState;
 import uz.doston.flyingbookbot.repository.AuthUserRepository;
 import uz.doston.flyingbookbot.utils.MessageExecutor;
+import uz.doston.flyingbookbot.utils.Translate;
 import uz.doston.flyingbookbot.utils.UserState;
-
-import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
@@ -18,28 +16,29 @@ public class MessageHandler {
 
     private final AuthUserRepository authUserRepository;
     private final MessageExecutor executor;
+    private final Translate translate;
 
     public void handle(Message message) {
         String chatId = message.getChatId().toString();
         String command = message.getText();
 //        UState state = getState(chatId);
-//        AuthRole role = authUserRepository.findAuthRoleByChatId(chatId);
+
+        AuthRole role = authUserRepository.findAuthRoleByChatId(chatId);
 //        SettingsState settingsState = getSettingsState(chatId);
 //        AddBookState addBookState = getAddBookState(chatId);
 //        RemoveBookState removeBookState = getRemoveBookState(chatId);
 //        ManagerState managerState = getManagerState(chatId);
 //        MenuState menuState = UserState.getMenuState(chatId);
 
-        if ("/start".equals(command)/* || Objects.isNull(role)*/) {
-            executor.sendMessage(chatId, "${hello}");
-
+        if ("/start".equals(command)) {
+            UserState.setMenuState(chatId, MenuState.UNDEFINED);
+            executor.sendMessage(chatId, translate.getTranslation("share.phone.number", "uz"));
 //            if (Objects.isNull(role)) {
 //                authorizationProcessor.process(message, state);
+//            } else {
+//                menuProcessor.sendMenu(message, state);
 //            }
-//            if (Objects.nonNull(role) && getMenuState(chatId).equals(MenuState.UNDEFINED)) {
-//                menuProcessor.menu(chatId, role);
-//            }
-//            return;
+            return;
         }
 //        else if ("/settings".equals(command)) {
 //            setMenuState(chatId, MenuState.SETTINGS);

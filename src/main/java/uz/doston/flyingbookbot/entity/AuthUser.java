@@ -11,8 +11,8 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-@Entity
 @NoArgsConstructor
+@Entity
 public class AuthUser {
 
     @Id
@@ -44,7 +44,7 @@ public class AuthUser {
     @Column
     private String userName;
 
-    @Column(nullable = false, columnDefinition = "default current TIMESTAMP WITH TIME ZONE")
+    @Column(nullable = false, columnDefinition = " TIMESTAMP WITH TIME ZONE default now()")
     @CreationTimestamp
     private LocalDateTime createdAt;
 
