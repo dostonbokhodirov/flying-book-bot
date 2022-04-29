@@ -38,7 +38,7 @@ public class InlineKeyboard {
         return getInlineKeyboardMarkup(uz, ru, en);
     }
 
-    public static ReplyKeyboard gender(String chatId) {
+    public static ReplyKeyboard genderButtons(String chatId) {
         String language = UserState.getLanguage(chatId);
 
         InlineKeyboardButton male = getInlineKeyboardButton(

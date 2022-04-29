@@ -5,14 +5,22 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import uz.doston.flyingbookbot.enums.AuthRole;
 import uz.doston.flyingbookbot.enums.MenuState;
+import uz.doston.flyingbookbot.enums.State;
+import uz.doston.flyingbookbot.processors.AuthorizationProcessor;
 import uz.doston.flyingbookbot.repository.AuthUserRepository;
+import uz.doston.flyingbookbot.service.AuthUserService;
 import uz.doston.flyingbookbot.utils.MessageExecutor;
 import uz.doston.flyingbookbot.utils.Translate;
 import uz.doston.flyingbookbot.utils.UserState;
 
+import java.util.Objects;
+
 @Component
 @RequiredArgsConstructor
 public class MessageHandler {
+
+    private final AuthorizationProcessor authorizationProcessor;
+    private final AuthUserService authUserService;
 
     private final AuthUserRepository authUserRepository;
     private final MessageExecutor executor;
@@ -21,9 +29,9 @@ public class MessageHandler {
     public void handle(Message message) {
         String chatId = message.getChatId().toString();
         String command = message.getText();
-//        UState state = getState(chatId);
+        State state = UserState.getState(chatId);
 
-        AuthRole role = authUserRepository.findAuthRoleByChatId(chatId);
+        AuthRole role = authUserService.getRoleByChatId(chatId);
 //        SettingsState settingsState = getSettingsState(chatId);
 //        AddBookState addBookState = getAddBookState(chatId);
 //        RemoveBookState removeBookState = getRemoveBookState(chatId);
@@ -31,13 +39,11 @@ public class MessageHandler {
 //        MenuState menuState = UserState.getMenuState(chatId);
 
         if ("/start".equals(command)) {
-            UserState.setMenuState(chatId, MenuState.UNDEFINED);
-            executor.sendMessage(chatId, translate.getTranslation("share.phone.number", "uz"));
-//            if (Objects.isNull(role)) {
-//                authorizationProcessor.process(message, state);
-//            } else {
-//                menuProcessor.sendMenu(message, state);
-//            }
+            if (Objects.isNull(role)) {
+                authorizationProcessor.process(message, state);
+            } else {
+                menuProcessor.sendMenu(message, state);
+            }
             return;
         }
 //        else if ("/settings".equals(command)) {
