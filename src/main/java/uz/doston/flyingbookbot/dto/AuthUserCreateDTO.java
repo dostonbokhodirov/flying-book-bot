@@ -8,7 +8,7 @@ import uz.doston.flyingbookbot.enums.AuthRole;
 @Getter
 @Setter
 @NoArgsConstructor
-public class UserCreateDTO {
+public class AuthUserCreateDTO {
     private String fullName;
     private Integer age;
     private String gender;

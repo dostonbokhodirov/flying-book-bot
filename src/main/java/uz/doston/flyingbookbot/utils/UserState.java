@@ -1,10 +1,9 @@
 package uz.doston.flyingbookbot.utils;
 
-import uz.doston.flyingbookbot.dto.UserCreateDTO;
+import uz.doston.flyingbookbot.dto.AuthUserCreateDTO;
 import uz.doston.flyingbookbot.enums.MenuState;
 import uz.doston.flyingbookbot.enums.State;
 
-import javax.annotation.PostConstruct;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,8 +11,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class UserState {
     private final static ConcurrentHashMap<String, State> STATES = new ConcurrentHashMap<>();
     private final static ConcurrentHashMap<String, MenuState> MENU_STATES = new ConcurrentHashMap<>();
-    private final static ConcurrentHashMap<String, UserCreateDTO> CREATE_DTO_STATES = new ConcurrentHashMap<>();
+    private final static ConcurrentHashMap<String, AuthUserCreateDTO> CREATE_DTO_STATES = new ConcurrentHashMap<>();
     private final static ConcurrentHashMap<String, String> LANGUAGES = new ConcurrentHashMap<>();
+    private final static ConcurrentHashMap<String, Integer> OFFSETS = new ConcurrentHashMap<>();
 
     public static State getState(String chatId) {
         if (Objects.isNull(STATES.get(chatId))) {
@@ -29,9 +29,9 @@ public class UserState {
         return MENU_STATES.get(chatId);
     }
 
-    public static UserCreateDTO getUserCreateDTO(String chatId) {
+    public static AuthUserCreateDTO getUserCreateDTO(String chatId) {
         if (Objects.isNull(CREATE_DTO_STATES.get(chatId))) {
-            setUserCreateDTO(chatId, new UserCreateDTO());
+            setUserCreateDTO(chatId, new AuthUserCreateDTO());
         }
         return CREATE_DTO_STATES.get(chatId);
     }
@@ -42,6 +42,14 @@ public class UserState {
         }
         return LANGUAGES.get(chatId);
     }
+
+    public static Integer getOffset(String chatId) {
+        if (Objects.isNull(OFFSETS.get(chatId))) {
+            setOffset(chatId, 0);
+        }
+        return OFFSETS.get(chatId);
+    }
+
 
     public static void setMenuState(String chatId, MenuState state) {
         CompletableFuture.runAsync(() -> {
@@ -57,7 +65,7 @@ public class UserState {
         STATES.put(chatId, state);
     }
 
-    public static void setUserCreateDTO(String chatId, UserCreateDTO dto) {
+    public static void setUserCreateDTO(String chatId, AuthUserCreateDTO dto) {
         CompletableFuture.runAsync(() -> {
             // TODO: write to file
         });
@@ -66,6 +74,15 @@ public class UserState {
 
     public static void setLanguage(String chatId, String language) {
         LANGUAGES.put(chatId, language);
+    }
+
+    public static void setOffset(String chatId, Integer offset) {
+        CompletableFuture.runAsync(() -> {
+            // TODO: write to file
+        });
+        if (offset == 0) {
+            OFFSETS.put(chatId, offset);
+        } else OFFSETS.put(chatId, getOffset(chatId) + offset);
     }
 
 }

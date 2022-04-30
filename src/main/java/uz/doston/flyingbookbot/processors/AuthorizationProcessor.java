@@ -6,20 +6,21 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ForceReplyKeyboard;
 import uz.doston.flyingbookbot.buttons.InlineKeyboard;
-import uz.doston.flyingbookbot.dto.UserCreateDTO;
+import uz.doston.flyingbookbot.dto.AuthUserCreateDTO;
 import uz.doston.flyingbookbot.enums.AuthRole;
 import uz.doston.flyingbookbot.enums.MenuState;
 import uz.doston.flyingbookbot.enums.State;
+import uz.doston.flyingbookbot.service.AuthUserService;
 import uz.doston.flyingbookbot.utils.Emojis;
 import uz.doston.flyingbookbot.utils.MessageExecutor;
 import uz.doston.flyingbookbot.utils.Translate;
 import uz.doston.flyingbookbot.utils.UserState;
 
-import java.util.Objects;
-
 @Component
 @RequiredArgsConstructor
 public class AuthorizationProcessor {
+
+    private final AuthUserService authUserService;
 
     private final MessageExecutor executor;
     private final Translate translate;
@@ -27,7 +28,7 @@ public class AuthorizationProcessor {
     public void process(Message message, State state) {
         String chatId = message.getChatId().toString();
         String language = UserState.getLanguage(chatId);
-        if (State.USER_LANG.equals(state) || Objects.isNull(state)) {
+        if (State.USER_LANG.equals(state) || State.USER_ANONYMOUS.equals(state)) {
             executor.sendMessage(chatId, """
                     Tilni tanlang:
                     Выберите язык:
@@ -43,7 +44,7 @@ public class AuthorizationProcessor {
                                 translate.getTranslation("without.numbers", language)),
                         new ForceReplyKeyboard(true));
             } else {
-                UserCreateDTO dto = UserState.getUserCreateDTO(chatId);
+                AuthUserCreateDTO dto = UserState.getUserCreateDTO(chatId);
                 dto.setFullName(text);
                 UserState.setUserCreateDTO(chatId, dto);
 
@@ -55,7 +56,7 @@ public class AuthorizationProcessor {
             if (StringUtils.isNumeric(text)) {
                 if (Integer.parseInt(text) <= 100) {
 
-                    UserCreateDTO dto = UserState.getUserCreateDTO(chatId);
+                    AuthUserCreateDTO dto = UserState.getUserCreateDTO(chatId);
                     dto.setAge(Integer.valueOf(text));
                     UserState.setUserCreateDTO(chatId, dto);
 
@@ -87,10 +88,12 @@ public class AuthorizationProcessor {
                                 Emojis.GREAT,
                                 translate.getTranslation("welcome", language)));
 
-                UserCreateDTO dto = UserState.getUserCreateDTO(chatId);
+                AuthUserCreateDTO dto = UserState.getUserCreateDTO(chatId);
                 dto.setPhoneNumber(phoneNumber);
                 dto.setRole(AuthRole.USER);
                 UserState.setUserCreateDTO(chatId, dto);
+
+                authUserService.save(dto);
 
                 UserState.setState(chatId, State.USER_AUTHORIZED);
                 UserState.setMenuState(chatId, MenuState.UNDEFINED);

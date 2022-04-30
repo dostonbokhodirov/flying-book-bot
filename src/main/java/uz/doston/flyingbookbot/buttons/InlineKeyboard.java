@@ -12,6 +12,7 @@ import uz.doston.flyingbookbot.utils.UserState;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class InlineKeyboard {
 
@@ -224,7 +225,7 @@ public class InlineKeyboard {
 
     public static InlineKeyboardMarkup getInlineKeyboardMarkup(InlineKeyboardButton... buttons) {
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
-        inlineKeyboardMarkup.setKeyboard(List.of(new ArrayList<>(Arrays.asList(buttons))));
+        inlineKeyboardMarkup.setKeyboard(Arrays.stream(buttons).map(List::of).collect(Collectors.toList()));
         return inlineKeyboardMarkup;
     }
 
