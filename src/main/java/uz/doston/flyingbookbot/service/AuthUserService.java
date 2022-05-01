@@ -1,7 +1,11 @@
 package uz.doston.flyingbookbot.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import uz.doston.flyingbookbot.criteria.AuthUserCriteria;
 import uz.doston.flyingbookbot.dto.AuthUserCreateDTO;
 import uz.doston.flyingbookbot.entity.AuthUser;
 import uz.doston.flyingbookbot.enums.AuthRole;
@@ -83,5 +87,10 @@ public class AuthUserService {
                 .append(" <code>").append(createdAt).append("</code>\n");
 
         return stringBuilder;
+    }
+
+    public List<AuthUser> getAll(AuthUserCriteria criteria) {
+        Pageable pageable = PageRequest.of(criteria.getPage(), criteria.getSize(), Sort.Direction.DESC);
+        return authUserRepository.findAllByCreatedAt(pageable).getContent();
     }
 }

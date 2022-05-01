@@ -1,5 +1,7 @@
 package uz.doston.flyingbookbot.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import uz.doston.flyingbookbot.entity.AuthUser;
@@ -16,4 +18,6 @@ public interface AuthUserRepository extends JpaRepository<AuthUser, Long> {
     Long countByRole(AuthRole role);
 
     Optional<AuthUser> findByChatId(String chatId);
+
+    Page<AuthUser> findAllByCreatedAt(Pageable pageable);
 }
