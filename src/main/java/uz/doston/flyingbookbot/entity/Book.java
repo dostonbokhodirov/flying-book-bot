@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.annotation.sql.DataSourceDefinitions;
 import javax.persistence.*;
 
 @Getter
