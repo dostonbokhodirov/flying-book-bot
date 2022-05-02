@@ -4,6 +4,7 @@ import lombok.NonNull;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import uz.doston.flyingbookbot.criteria.Criteria;
 import uz.doston.flyingbookbot.enums.MenuState;
 import uz.doston.flyingbookbot.utils.Emojis;
 import uz.doston.flyingbookbot.utils.Translate;
@@ -52,14 +53,18 @@ public class InlineKeyboard {
         return getInlineKeyboardMarkup(male, female);
     }
 
-    public static InlineKeyboardMarkup bookOrUserButtons(List<Long> idList, Integer offset, Integer limit) {
+    public static InlineKeyboardMarkup bookOrUserButtons(List<Long> idList, Criteria criteria) {
+
+        Integer page = criteria.getPage();
+        Integer size = criteria.getSize();
+
         List<String> numbers = new ArrayList<>(Arrays.asList("1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "\uD83D\uDD1F"));
         InlineKeyboardMarkup board = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
         List<InlineKeyboardButton> firstNumberButtons = new ArrayList<>();
         List<InlineKeyboardButton> secondNumberButtons = new ArrayList<>();
         int i = 1;
-        if (idList.size() <= limit) {
+        if (idList.size() <= size) {
             for (Long id : idList) {
                 InlineKeyboardButton button =
                         getInlineKeyboardButton(numbers.get(i++ - 1), String.valueOf(id));
@@ -77,13 +82,13 @@ public class InlineKeyboard {
             buttons.add(secondNumberButtons);
         }
 
-        List<InlineKeyboardButton> extraButtons = extraButtons(idList, offset, limit);
+        List<InlineKeyboardButton> extraButtons = extraButtons(idList, page, size);
         buttons.add(extraButtons);
         board.setKeyboard(buttons);
         return board;
     }
 
-//    public static InlineKeyboardMarkup book(ArrayList<Book> books, Integer offset, Integer limit) {
+//    public static InlineKeyboardMarkup book(ArrayList<Book> books, Integer page, Integer size) {
 //        InlineKeyboardMarkup board = new InlineKeyboardMarkup();
 //        List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
 //        List<InlineKeyboardButton> firstNumberButtons = new ArrayList<>();
@@ -110,13 +115,13 @@ public class InlineKeyboard {
 //
 //        List<Long> idList = books.stream().map(Book::getId).collect(Collectors.toList());
 //
-//        List<InlineKeyboardButton> extraButtons = extraButtons(idList, offset, limit);
+//        List<InlineKeyboardButton> extraButtons = extraButtons(idList, page, size);
 //        buttons.add(extraButtons);
 //        board.setKeyboard(buttons);
 //        return board;
 //    }
 
-//    public static InlineKeyboardMarkup user(ArrayList<AuthUser> users, Integer offset, Integer limit) {
+//    public static InlineKeyboardMarkup user(ArrayList<AuthUser> users, Integer page, Integer size) {
 //        List<String> numbers = new ArrayList<>(Arrays.asList("1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "\uD83D\uDD1F"));
 //        InlineKeyboardMarkup board = new InlineKeyboardMarkup();
 //        List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
@@ -142,21 +147,21 @@ public class InlineKeyboard {
 //        }
 //
 //        List<Long> idList = users.stream().map(AuthUser::getId).collect(Collectors.toList());
-//        List<InlineKeyboardButton> extraButtons = extraButtons(idList, offset, limit);
+//        List<InlineKeyboardButton> extraButtons = extraButtons(idList, page, size);
 //        buttons.add(extraButtons);
 //        board.setKeyboard(buttons);
 //        return board;
 //    }
 
-    public static List<InlineKeyboardButton> extraButtons(List<Long> idList, Integer offset, Integer limit) {
+    public static List<InlineKeyboardButton> extraButtons(List<Long> idList, Integer page, Integer size) {
         List<InlineKeyboardButton> extraButtons = new ArrayList<>();
-        if (offset > 0) {
+        if (page > 0) {
             InlineKeyboardButton prevButton = getInlineKeyboardButton(Emojis.PREVIOUS, "prev");
             extraButtons.add(prevButton);
         }
         InlineKeyboardButton cancelButton = getInlineKeyboardButton(Emojis.REMOVE, "cancel");
         extraButtons.add(cancelButton);
-        if (idList.size() == limit) {
+        if (idList.size() == size) {
             InlineKeyboardButton nextButton = getInlineKeyboardButton(Emojis.NEXT, "next");
             extraButtons.add(nextButton);
         }
@@ -196,7 +201,7 @@ public class InlineKeyboard {
         return new InlineKeyboardMarkup(List.of(row1, row2, row3, row4));
     }
 
-    public static InlineKeyboardMarkup limitButtons() {
+    public static InlineKeyboardMarkup sizeButtons() {
         InlineKeyboardButton five = getInlineKeyboardButton("5️⃣", "five");
         InlineKeyboardButton eight = getInlineKeyboardButton("8️⃣", "eight");
         InlineKeyboardButton ten = getInlineKeyboardButton("\uD83D\uDD1F", "ten");

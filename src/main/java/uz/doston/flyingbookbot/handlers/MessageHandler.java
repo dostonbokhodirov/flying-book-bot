@@ -2,14 +2,15 @@ package uz.doston.flyingbookbot.handlers;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import uz.doston.flyingbookbot.buttons.InlineKeyboard;
 import uz.doston.flyingbookbot.buttons.ReplyKeyboard;
 import uz.doston.flyingbookbot.enums.AuthRole;
 import uz.doston.flyingbookbot.enums.MenuState;
 import uz.doston.flyingbookbot.enums.State;
+import uz.doston.flyingbookbot.processors.AuthUserProcessor;
 import uz.doston.flyingbookbot.processors.AuthorizationProcessor;
+import uz.doston.flyingbookbot.processors.BookProcessor;
 import uz.doston.flyingbookbot.processors.MenuProcessor;
 import uz.doston.flyingbookbot.service.AuthUserService;
 import uz.doston.flyingbookbot.utils.MessageExecutor;
@@ -19,14 +20,14 @@ import uz.doston.flyingbookbot.utils.UserState;
 
 import java.util.Objects;
 
-import static com.sun.tools.javac.code.TypeTag.BOT;
-
 @Component
 @RequiredArgsConstructor
 public class MessageHandler {
 
     private final AuthorizationProcessor authorizationProcessor;
     private final MenuProcessor menuProcessor;
+    private final BookProcessor bookProcessor;
+    private final AuthUserProcessor authUserProcessor;
     private final AuthUserService authUserService;
     private final Messages messages;
 
@@ -72,16 +73,17 @@ public class MessageHandler {
                     InlineKeyboard.searchButtons(chatId));
 
             UserState.setMenuState(chatId, MenuState.SEARCH);
-            UserState.setOffset(chatId, 0);
+            UserState.setPage(chatId, 0);
             return;
         } else if ("/top".equals(command)) {
             UserState.setMenuState(chatId, MenuState.TOP);
-            topBookProcessor.process(message);
+            bookProcessor.topBookProcess(message);
             return;
         } else if ("/users".equals(command)) {
             if (!role.equals(AuthRole.USER)) {
-                UserState.setMenuState(chatId, MenuState.USERLIST);
-                userListProcessor.process(message);
+                UserState.setMenuState(chatId, MenuState.USER_LIST);
+                UserState.setPage(chatId, 0);
+                authUserProcessor.process(message);
             }
             return;
         } else if ("/post".equals(command)) {

@@ -13,7 +13,8 @@ public class UserState {
     private final static ConcurrentHashMap<String, MenuState> MENU_STATES = new ConcurrentHashMap<>();
     private final static ConcurrentHashMap<String, AuthUserCreateDTO> CREATE_DTO_STATES = new ConcurrentHashMap<>();
     private final static ConcurrentHashMap<String, String> LANGUAGES = new ConcurrentHashMap<>();
-    private final static ConcurrentHashMap<String, Integer> OFFSETS = new ConcurrentHashMap<>();
+    private final static ConcurrentHashMap<String, Integer> PAGES = new ConcurrentHashMap<>();
+    private final static ConcurrentHashMap<String, Integer> SIZES = new ConcurrentHashMap<>();
 
     public static State getState(String chatId) {
         if (Objects.isNull(STATES.get(chatId))) {
@@ -43,11 +44,18 @@ public class UserState {
         return LANGUAGES.get(chatId);
     }
 
-    public static Integer getOffset(String chatId) {
-        if (Objects.isNull(OFFSETS.get(chatId))) {
-            setOffset(chatId, 0);
+    public static Integer getPage(String chatId) {
+        if (Objects.isNull(PAGES.get(chatId))) {
+            setPage(chatId, 0);
         }
-        return OFFSETS.get(chatId);
+        return PAGES.get(chatId);
+    }
+
+    public static Integer getSize(String chatId) {
+        if (Objects.isNull(SIZES.get(chatId))) {
+            setSize(chatId, 0);
+        }
+        return SIZES.get(chatId);
     }
 
 
@@ -76,13 +84,21 @@ public class UserState {
         LANGUAGES.put(chatId, language);
     }
 
-    public static void setOffset(String chatId, Integer offset) {
+    public static void setPage(String chatId, Integer page) {
         CompletableFuture.runAsync(() -> {
             // TODO: write to file
         });
-        if (offset == 0) {
-            OFFSETS.put(chatId, offset);
-        } else OFFSETS.put(chatId, getOffset(chatId) + offset);
+        if (page == 0) {
+            PAGES.put(chatId, page);
+        } else PAGES.put(chatId, getPage(chatId) + page);
+    }
+
+    public static void setSize(String chatId, Integer size) {
+        CompletableFuture.runAsync(() -> {
+            // TODO: write to file
+        });
+        if (size == 0) SIZES.put(chatId, size);
+        else SIZES.put(chatId, size);
     }
 
 }
