@@ -7,5 +7,9 @@ import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 public class CallbackHandler {
     public void handle(CallbackQuery callbackQuery) {
 
+
+
+
+
     }
 }

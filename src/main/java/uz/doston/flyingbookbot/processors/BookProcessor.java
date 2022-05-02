@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResult;
 import uz.doston.flyingbookbot.buttons.InlineKeyboard;
 import uz.doston.flyingbookbot.criteria.BookCriteria;
 import uz.doston.flyingbookbot.entity.Book;
@@ -46,5 +47,9 @@ public class BookProcessor {
             List<Long> bookIds = books.stream().map(Book::getId).collect(Collectors.toList());
             executor.sendMessage(chatId, text, InlineKeyboard.bookOrUserButtons(bookIds, bookCriteria));
         }
+    }
+
+    public List<InlineQueryResult> getAllByQueryMatches(String query) {
+        return bookService.getAllByMatches(query);
     }
 }
