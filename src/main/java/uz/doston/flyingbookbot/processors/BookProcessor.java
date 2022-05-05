@@ -2,7 +2,6 @@ package uz.doston.flyingbookbot.processors;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResult;
 import uz.doston.flyingbookbot.buttons.InlineKeyboard;

@@ -40,119 +40,86 @@ public class MessageHandler {
         String command = message.getText();
         State state = UserState.getState(chatId);
         MenuState menuState = UserState.getMenuState(chatId);
-//        SettingsState settingsState = getSettingsState(chatId);
-//        AddBookState addBookState = getAddBookState(chatId);
-//        RemoveBookState removeBookState = getRemoveBookState(chatId);
-//        ManagerState managerState = getManagerState(chatId);
 
         AuthRole role = authUserService.getRoleByChatId(chatId);
 
-        if ("/start".equals(command)) {
-            if (Objects.isNull(role)) {
-                authorizationProcessor.process(message, state);
-            } else {
-                menuProcessor.sendMainMenu(chatId, role, "<b>%s</b>"
-                        .formatted(translate.getTranslation("choose.menu", language)));
-            }
-            return;
-        } else if ("/settings".equals(command)) {
-            UserState.setMenuState(chatId, MenuState.SETTINGS);
+        switch (command) {
+            case "/start":
+                if (Objects.isNull(role)) {
+                    authorizationProcessor.process(message, state);
+                } else {
+                    menuProcessor.sendMainMenu(chatId, role, "<b>%s</b>"
+                            .formatted(translate.getTranslation("choose.menu", language)));
+                }
+                return;
+            case "/settings":
+                UserState.setMenuState(chatId, MenuState.SETTINGS);
 
-            executor.sendMessage(
-                    chatId,
-                    "<b>%s</b>".formatted(translate.getTranslation("settings.menu", language)),
-                    ReplyKeyboard.settingsMenu(chatId));
-            return;
-        } else if ("/help".equals(command)) {
-            executor.sendMessage(chatId, messages.helpMessage(chatId));
-            return;
-        } else if ("/search".equals(command)) {
-            executor.sendMessage(
-                    chatId,
-                    translate.getTranslation("choose.search.type", language),
-                    InlineKeyboard.searchButtons(chatId));
+                executor.sendMessage(
+                        chatId,
+                        "<b>%s</b>".formatted(translate.getTranslation("settings.menu", language)),
+                        ReplyKeyboard.settingsMenu(chatId));
+                return;
+            case "/help":
+                executor.sendMessage(chatId, messages.helpMessage(chatId));
+                return;
+            case "/search":
+                executor.sendMessage(
+                        chatId,
+                        translate.getTranslation("choose.search.type", language),
+                        InlineKeyboard.searchButtons(chatId));
 
-            UserState.setMenuState(chatId, MenuState.SEARCH);
-            UserState.setPage(chatId, 0);
-            return;
-        } else if ("/top".equals(command)) {
-            UserState.setMenuState(chatId, MenuState.TOP);
-            bookProcessor.topBookProcess(message);
-            return;
-        } else if ("/users".equals(command)) {
-            if (!role.equals(AuthRole.USER)) {
-                UserState.setMenuState(chatId, MenuState.USER_LIST);
+                UserState.setMenuState(chatId, MenuState.SEARCH);
                 UserState.setPage(chatId, 0);
-                authUserProcessor.process(message);
-            }
-            return;
-        } else if ("/post".equals(command)) {
-            if (!role.equals(AuthRole.USER)) {
-                UserState.setMenuState(chatId, MenuState.POST);
-                executor.sendMessage(chatId, translate.getTranslation("send.post", language));
+                return;
+            case "/top":
+                UserState.setMenuState(chatId, MenuState.TOP);
+                bookProcessor.topBookProcess(message);
+                return;
+            case "/users":
+                if (!role.equals(AuthRole.USER)) {
+                    UserState.setMenuState(chatId, MenuState.USER_LIST);
+                    UserState.setPage(chatId, 0);
+                    authUserProcessor.process(message);
+                }
+                return;
+            case "/post":
+                if (!role.equals(AuthRole.USER)) {
+                    UserState.setMenuState(chatId, MenuState.POST);
+                    executor.sendMessage(chatId, translate.getTranslation("send.post", language));
+                    return;
+                }
+                break;
+            case "/stats": {
+                StringBuilder text = messages.statsMessage(chatId);
+                executor.sendMessage(chatId, text.toString());
                 return;
             }
-        } else if ("/stats".equals(command)) {
-            StringBuilder text = messages.statsMessage(chatId);
-            executor.sendMessage(chatId, text.toString());
-            return;
-        } else if ("/whoami".equals(command)) {
-            StringBuilder text = authUserService.detailMessage(chatId);
-            executor.sendMessage(chatId, text.toString());
-            return;
-        } else if ("/developers".equals(command)) {
-            String text = messages.developerMessage(chatId);
-            executor.sendMessage(chatId, text);
-            return;
+            case "/whoami": {
+                StringBuilder text = authUserService.detailMessage(chatId);
+                executor.sendMessage(chatId, text.toString());
+                return;
+            }
+            case "/developers": {
+                String text = messages.developerMessage(chatId);
+                executor.sendMessage(chatId, text);
+                return;
+            }
         }
-        if (menuState.equals(MenuState.UNDEFINED)) {
 
-            menuProcessor.sendMainMenu(chatId, role, null);
-
-        } else if (menuState.equals(MenuState.SETTINGS)) {
-
-            authUserProcessor.settingsProcess(message, state);
-
-        } else if (menuState.equals(MenuState.ADD_BOOK)) {
-
-            addBookProcessor.process(message, state, role);
-
-        } else if (menuState.equals(MenuState.SEARCH)) {
-
-            searchBookProcessor.process(message, State.getSearchState(chatId));
-
-        } else if (menuState.equals(MenuState.REMOVE_BOOK)) {
-
-            removeBookProcessor.process(message, removeBookState);
-
-        } else if (getMenuState(chatId).equals(MenuState.DOWNLOADED)) {
-
-            downloadedBookProcessor.process(message);
-
-        } else if (getMenuState(chatId).equals(MenuState.UPLOADED)) {
-
-            uploadedBookProcessor.process(message);
-
-        } else if (menuState.equals(MenuState.TOP)) {
-
-            topBookProcessor.process(message);
-
-        } else if (menuState.equals(MenuState.USERLIST)) {
-
-            userListProcessor.process(message);
-
-        } else if (menuState.equals(MenuState.ADD_MANAGER)) {
-
-            addManagerProcessor.process(message, managerState);
-
-        } else if (menuState.equals(MenuState.REMOVE_MANAGER)) {
-
-            removeManagerProcessor.process(message, managerState);
-
-        } else if (menuState.equals(MenuState.POST)) {
-
-            postProcessor.process(message);
-
+        switch (menuState) {
+            case UNDEFINED -> menuProcessor.sendMainMenu(chatId, role, "");
+            case SETTINGS -> authUserProcessor.settingsProcess(message, state);
+            case ADD_BOOK -> bookProcessor.addBookProcess(message, state, role);
+            case SEARCH -> bookProcessor.searchBookProcess(message, state);
+            case REMOVE_BOOK -> bookProcessor.removeBookProcess(message, state);
+            case DOWNLOADED -> bookProcessor.downloadedBookProcess(message);
+            case UPLOADED -> bookProcessor.uploadedBookProcess(message);
+            case TOP -> bookProcessor.topBookProcess(message);
+            case USER_LIST -> authUserProcessor.authUserListProcess(message);
+            case ADD_MANAGER -> authUserProcessor.addManagerProcess(message, state);
+            case REMOVE_MANAGER -> authUserProcessor.removeManagerProcess(message, UserState.getState(chatId));
+            case POST -> authUserProcessor.postProcess(message);
         }
     }
 }

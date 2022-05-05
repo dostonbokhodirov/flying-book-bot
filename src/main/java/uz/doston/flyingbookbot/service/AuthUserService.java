@@ -120,4 +120,16 @@ public class AuthUserService {
     public AuthUser getByChatId(String chatId) {
         return authUserRepository.findByChatId(chatId).orElseThrow();
     }
+
+    public String getFullNameByChatId(String chatId) {
+        return authUserRepository.findFullNameByChatId(chatId);
+    }
+
+    public Integer getAgeByChatId(String chatId) {
+        return authUserRepository.findAgeByChatId(chatId);
+    }
+
+    public String getPhoneNumberByChatId(String chatId) {
+        return authUserRepository.findPhoneNumberByChatId(chatId);
+    }
 }

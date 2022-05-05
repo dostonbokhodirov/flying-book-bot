@@ -3,11 +3,12 @@ package uz.doston.flyingbookbot.processors;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ForceReplyKeyboard;
 import uz.doston.flyingbookbot.buttons.InlineKeyboard;
+import uz.doston.flyingbookbot.buttons.ReplyKeyboard;
 import uz.doston.flyingbookbot.criteria.AuthUserCriteria;
+import uz.doston.flyingbookbot.dto.AuthUserUpdateDTO;
 import uz.doston.flyingbookbot.entity.AuthUser;
 import uz.doston.flyingbookbot.enums.MenuState;
 import uz.doston.flyingbookbot.enums.State;
@@ -18,13 +19,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static com.sun.tools.javac.code.TypeTag.BOT;
-
 @Component
 @RequiredArgsConstructor
 public class AuthUserProcessor {
-
     private final AuthUserService authUserService;
+    private final MenuProcessor menuProcessor;
     private final MessageExecutor executor;
     private final Translate translate;
 
@@ -55,12 +54,10 @@ public class AuthUserProcessor {
                 && text.equals("%s %s".formatted(Emojis.NAME, translate.getTranslation("change.name", language)))
                 && state.equals(State.UNDEFINED)) {
 
-            String name = authUserService.findFieldByChatID(chatId, "full_name");
-
-            SendMessage sendMessage = new SendMessage(chatId,
-                    translate.getTranslation("current.name", language) + " " + name + "\n" +
-                            translate.getTranslation("new.name", language));
-            BOT.executeMessage(sendMessage);
+            executor.sendMessage(chatId, "%s %s\n%s".formatted(
+                    translate.getTranslation("current.name", language),
+                    authUserService.getFullNameByChatId(chatId),
+                    translate.getTranslation("new.name", language)));
 
             UserState.setState(chatId, State.CHANGE_NAME);
 
@@ -68,33 +65,44 @@ public class AuthUserProcessor {
 
             if (StringUtils.isNumeric(text) || !text.equals(StringUtils.capitalize(text))) {
 
-                SendMessage sendMessage = new SendMessage(chatId,
-                        LangConfig.get(chatId, "full.name.correctly") + "\n" +
-                                LangConfig.get(chatId, "without.numbers"));
-                sendMessage.setReplyMarkup(new ForceReplyKeyboard());
-                BOT.executeMessage(sendMessage);
+                executor.sendMessage(chatId, "%s\n%s".formatted(
+                                translate.getTranslation("full.name.correctly", language),
+                                translate.getTranslation("without.numbers", language)),
+                        new ForceReplyKeyboard());
 
             } else {
 
-                authUserRepository.save("full_name", text, chatId);
-                SendMessage sendMessage = new SendMessage(chatId, Emojis.ADD + " " +
-                        LangConfig.get(chatId, "full.name.changed") + "\n" +
-                        LangConfig.get(chatId, "current.name") + " " +
-                        authUserRepository.findFieldByChatID(chatId, "full_name"));
-                BOT.executeMessage(sendMessage);
-                State.setState(chatId, State.UNDEFINED);
-                menu(chatId, LangConfig.get(chatId, "settings.menu"));
+                AuthUserUpdateDTO dto = AuthUserUpdateDTO
+                        .builder()
+                        .chatId(chatId)
+                        .fullName(text)
+                        .build();
+
+                authUserService.update(dto);
+
+                executor.sendMessage(chatId, "%s %s\n%s %s".formatted(
+                        Emojis.ADD,
+                        translate.getTranslation("full.name.changed", language),
+                        translate.getTranslation("current.name", language),
+                        text));
+
+                UserState.setState(chatId, State.UNDEFINED);
+
+                menuProcessor.sendSettingsMenu(chatId, translate.getTranslation("settings.menu", language));
 
             }
         } else if (Objects.nonNull(text)
-                && text.equals(Emojis.AGE + " " + LangConfig.get(chatId, "change.birthdate"))
+                && text.equals("%s %s".formatted(
+                Emojis.AGE,
+                translate.getTranslation("change.birthdate", language)))
                 && state.equals(State.UNDEFINED)) {
 
-            String age = authUserRepository.findFieldByChatID(chatId, "age");
-            SendMessage sendMessage = new SendMessage(chatId, LangConfig.get(chatId, "current.age") + " " + age + "\n" +
-                    LangConfig.get(chatId, "new.age"));
-            BOT.executeMessage(sendMessage);
-            State.setState(chatId, State.CHANGE_AGE);
+            executor.sendMessage(chatId, "%s %d\n%s".formatted(
+                    translate.getTranslation("current.age", language),
+                    authUserService.getAgeByChatId(chatId),
+                    translate.getTranslation("new.age", language)));
+
+            UserState.setState(chatId, State.CHANGE_AGE);
 
         } else if (state.equals(State.CHANGE_AGE)) {
 
@@ -102,118 +110,132 @@ public class AuthUserProcessor {
 
                 if (Integer.parseInt(text) <= 100) {
 
-                    authUserRepository.save("age", text, chatId);
-                    SendMessage sendMessage = new SendMessage(chatId, Emojis.ADD + " " +
-                            LangConfig.get(chatId, "age.changed") + "\n" +
-                            LangConfig.get(chatId, "current.age") + authUserRepository.findFieldByChatID(chatId, "age"));
-                    BOT.executeMessage(sendMessage);
-                    State.setState(chatId, State.UNDEFINED);
-                    menu(chatId, LangConfig.get(chatId, "settings.menu"));
+                    AuthUserUpdateDTO dto = AuthUserUpdateDTO
+                            .builder()
+                            .chatId(chatId)
+                            .age(Integer.valueOf(text))
+                            .build();
+
+                    authUserService.update(dto);
+
+                    executor.sendMessage(chatId, "%s %s\n%s%s".formatted(
+                            Emojis.ADD,
+                            translate.getTranslation("age.changed", language),
+                            translate.getTranslation("current.age", language),
+                            text));
+
+                    UserState.setState(chatId, State.UNDEFINED);
+
+                    menuProcessor.sendSettingsMenu(chatId, translate.getTranslation("settings.menu", language));
 
                 } else {
 
-                    SendMessage sendMessage = new SendMessage(chatId,
-                            LangConfig.get(chatId, "sure.age") + " " + Emojis.REALLY + "\n" +
-                                    LangConfig.get(chatId, "enter.age.again"));
-                    BOT.executeMessage(sendMessage);
+                    executor.sendMessage(chatId, "%s %s\n%s".formatted(
+                            translate.getTranslation("sure.age", language),
+                            Emojis.REALLY,
+                            translate.getTranslation("enter.age.again", language)));
 
                 }
             } else {
 
-                SendMessage sendMessage = new SendMessage(chatId,
-                        LangConfig.get(chatId, "age.correctly") + " " + Emojis.SAD);
-                BOT.executeMessage(sendMessage);
+                executor.sendMessage(chatId,
+                        "%s %s".formatted(translate.getTranslation("age.correctly", language), Emojis.SAD));
 
             }
         } else if (Objects.nonNull(text)
-                && text.equals(Emojis.PHONE + " " + LangConfig.get(chatId, "change.phone.number"))
+                && text.equals("%s %s"
+                .formatted(Emojis.PHONE, translate.getTranslation("change.phone.number", language)))
                 && state.equals(State.UNDEFINED)) {
 
-            String phoneNumber = authUserRepository.findFieldByChatID(chatId, "phone_number");
-            SendMessage sendMessage = new SendMessage(chatId,
-                    LangConfig.get(chatId, "current.phone.number") + " " + phoneNumber + "\n" +
-                            LangConfig.get(chatId, "new.phone.number"));
-            sendMessage.setReplyMarkup(MarkupBoard.sharePhoneNumber(chatId));
-            BOT.executeMessage(sendMessage);
-            State.setState(chatId, State.CHANGE_NUMBER);
+            executor.sendMessage(chatId, "%s %s\n%s".formatted(
+                            translate.getTranslation("current.phone.number", language),
+                            authUserService.getPhoneNumberByChatId(chatId),
+                            translate.getTranslation("new.phone.number", language)),
+                    ReplyKeyboard.sharePhoneNumber(chatId));
+
+            UserState.setState(chatId, State.CHANGE_NUMBER);
 
         } else if (Objects.nonNull(text)
-                && text.equals(Emojis.LIMIT + " " + LangConfig.get(chatId, "change.limit"))
+                && text.equals("%s %s"
+                .formatted(Emojis.LIMIT, translate.getTranslation("change.limit", language)))
                 && state.equals(State.UNDEFINED)) {
 
-            SendMessage sendMessage = new SendMessage();
-            sendMessage.setChatId(chatId);
-            sendMessage.setText(LangConfig.get(chatId, "choose.limit"));
-            sendMessage.setReplyMarkup(InlineBoard.limitButtons());
-            BOT.executeMessage(sendMessage);
+            executor.sendMessage(
+                    chatId,
+                    translate.getTranslation("choose.limit", language),
+                    InlineKeyboard.sizeButtons());
 
         } else if (state.equals(State.CHANGE_NUMBER)) {
 
             if (message.hasContact()) {
 
-                authUserRepository.save("phone_number", text, chatId);
-                SendMessage sendMessage = new SendMessage(chatId, Emojis.ADD + " " +
-                        LangConfig.get(chatId, "phone.number.changed") + "\n" +
-                        LangConfig.get(chatId, "current.phone.number") + " " + message.getContact().getPhoneNumber());
-                BOT.executeMessage(sendMessage);
-                State.setState(chatId, State.UNDEFINED);
-                menu(chatId, LangConfig.get(chatId, "settings.menu"));
+                AuthUserUpdateDTO dto = AuthUserUpdateDTO
+                        .builder()
+                        .chatId(chatId)
+                        .phoneNumber(text)
+                        .build();
+
+                authUserService.update(dto);
+
+                executor.sendMessage(chatId, "%s %s\n%s %s".formatted(
+                        Emojis.ADD,
+                        translate.getTranslation("phone.number.changed", language),
+                        translate.getTranslation("current.phone.number", language),
+                        message.getContact().getPhoneNumber()));
+
+                UserState.setState(chatId, State.UNDEFINED);
+
+                menuProcessor.sendSettingsMenu(chatId, translate.getTranslation("settings.menu", language));
 
             } else {
 
-                SendMessage sendMessage = new SendMessage(chatId,
-                        LangConfig.get(chatId, "invalid.number") + "\n" +
-                                LangConfig.get(chatId, "correct.number"));
-                BOT.executeMessage(sendMessage);
+                executor.sendMessage(chatId, "%s\n%s".formatted(
+                        translate.getTranslation("invalid.number", language),
+                        translate.getTranslation("correct.number", language)));
 
             }
         } else if (Objects.nonNull(text)
-                && text.equals(Emojis.LANGUAGE + " " + LangConfig.get(chatId, "change.language"))
+                && text.equals("%s %s"
+                .formatted(Emojis.LANGUAGE, translate.getTranslation("change.language", language)))
                 && state.equals(State.UNDEFINED)) {
 
-            String language = authUserRepository.findFieldByChatID(chatId, "language");
-            SendMessage sendMessage = new SendMessage(chatId,
-                    LangConfig.get(chatId, "current.language") + " " + language + "\n" +
-                            LangConfig.get(chatId, "new.language"));
-            sendMessage.setReplyMarkup(InlineBoard.languageButtons());
-            BOT.executeMessage(sendMessage);
-            State.setState(chatId, State.CHANGE_LANGUAGE);
+            executor.sendMessage(
+                    chatId, "%s %s\n%s".formatted(
+                            translate.getTranslation("current.language", language),
+                            language,
+                            translate.getTranslation("new.language", language)),
+                    InlineKeyboard.languageButtons());
+
+            UserState.setState(chatId, State.CHANGE_LANGUAGE);
 
         } else if (state.equals(State.CHANGE_LANGUAGE)) {
 
-            SendMessage sendMessage = new SendMessage(chatId, Emojis.ADD + " " +
-                    LangConfig.get(chatId, "language.changed") + "\n" +
-                    LangConfig.get(chatId, "current.language") + " " +
-                    authUserRepository.findFieldByChatID(chatId, "language"));
-            BOT.executeMessage(sendMessage);
-            State.setState(chatId, State.UNDEFINED);
-            menu(chatId, LangConfig.get(chatId, "settings.menu"));
+            executor.sendMessage(chatId, "%s %s\n%s %s".formatted(
+                    Emojis.ADD,
+                    translate.getTranslation("language.changed", language),
+                    translate.getTranslation("current.language", language),
+                    language));
+
+            UserState.setState(chatId, State.UNDEFINED);
+
+            menuProcessor.sendSettingsMenu(chatId, translate.getTranslation("settings.menu", language));
 
         } else if (Objects.nonNull(text)
-                && text.equals(Emojis.BACK + " " + LangConfig.get(chatId, "back"))) {
+                && text.equals("%s %s".formatted(Emojis.BACK, translate.getTranslation("back", language)))) {
 
-            String role = authUserRepository.findRoleById(chatId);
-            menuProcessor.menu(chatId, role, "<b>" + LangConfig.get(chatId, "back.menu") + "</b>");
-            State.setMenuState(chatId, MenuState.UNDEFINED);
-            State.setState(chatId, State.UNDEFINED);
+            menuProcessor.sendMainMenu(
+                    chatId,
+                    authUserService.getRoleByChatId(chatId),
+                    "<b>%s</b>".formatted(translate.getTranslation("back.menu", language)));
+
+            UserState.setMenuState(chatId, MenuState.UNDEFINED);
+            UserState.setState(chatId, State.UNDEFINED);
 
         } else {
 
-            menu(chatId, LangConfig.get(chatId, "wrong.button"));
+            menuProcessor.sendSettingsMenu(chatId, translate.getTranslation("wrong.button", language));
 
         }
-    }
-
-    public void menu(String chatId, String text) {
-        SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(chatId);
-        if (text.equals(LangConfig.get(chatId, "wrong.button"))) {
-            sendMessage.setText(Emojis.REMOVE + " " + text);
-        } else {
-            sendMessage.setText(text);
-        }
-        sendMessage.setReplyMarkup(MarkupBoard.settingsMenu(chatId));
-        BOT.executeMessage(sendMessage);
     }
 
 }
