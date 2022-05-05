@@ -8,8 +8,13 @@ import lombok.Setter;
 @Setter
 public class BookCriteria extends Criteria {
 
+    private String name;
+    private String genre;
+
     @Builder(builderMethodName = "childBuilder")
-    public BookCriteria(Integer page, Integer size) {
+    public BookCriteria(Integer page, Integer size, String name, String genre) {
         super(page, size);
+        this.name = name;
+        this.genre = genre;
     }
 }

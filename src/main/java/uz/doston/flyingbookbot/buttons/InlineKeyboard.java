@@ -208,7 +208,9 @@ public class InlineKeyboard {
         return getInlineKeyboardMarkup(five, eight, ten);
     }
 
-    public static ReplyKeyboard documentButtons(MenuState menuState) {
+    public static ReplyKeyboard documentButtons(String chatId) {
+        MenuState menuState = UserState.getMenuState(chatId);
+
         InlineKeyboardButton button = menuState.equals(MenuState.DOWNLOADED)
                 ? getInlineKeyboardButton(Emojis.REMOVE_BOOK, "remove")
                 : getInlineKeyboardButton(Emojis.ADD_BOOK, "add");

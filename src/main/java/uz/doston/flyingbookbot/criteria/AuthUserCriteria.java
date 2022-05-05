@@ -9,9 +9,12 @@ import lombok.Setter;
 @Builder
 public class AuthUserCriteria extends Criteria {
 
+    private String chatId;
+
     @Builder(builderMethodName = "childBuilder")
-    public AuthUserCriteria(Integer page, Integer size) {
+    public AuthUserCriteria(Integer page, Integer size, String chatId) {
         super(page, size);
+        this.chatId = chatId;
     }
 
 }

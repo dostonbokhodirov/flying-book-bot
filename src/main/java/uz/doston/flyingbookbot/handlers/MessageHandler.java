@@ -39,19 +39,19 @@ public class MessageHandler {
         String language = UserState.getLanguage(chatId);
         String command = message.getText();
         State state = UserState.getState(chatId);
-
-        AuthRole role = authUserService.getRoleByChatId(chatId);
+        MenuState menuState = UserState.getMenuState(chatId);
 //        SettingsState settingsState = getSettingsState(chatId);
 //        AddBookState addBookState = getAddBookState(chatId);
 //        RemoveBookState removeBookState = getRemoveBookState(chatId);
 //        ManagerState managerState = getManagerState(chatId);
-//        MenuState menuState = UserState.getMenuState(chatId);
+
+        AuthRole role = authUserService.getRoleByChatId(chatId);
 
         if ("/start".equals(command)) {
             if (Objects.isNull(role)) {
                 authorizationProcessor.process(message, state);
             } else {
-                menuProcessor.sendMenu(chatId, role, "<b>%s</b>"
+                menuProcessor.sendMainMenu(chatId, role, "<b>%s</b>"
                         .formatted(translate.getTranslation("choose.menu", language)));
             }
             return;
@@ -97,7 +97,7 @@ public class MessageHandler {
             executor.sendMessage(chatId, text.toString());
             return;
         } else if ("/whoami".equals(command)) {
-            StringBuilder text = authUserService.get(chatId);
+            StringBuilder text = authUserService.detailMessage(chatId);
             executor.sendMessage(chatId, text.toString());
             return;
         } else if ("/developers".equals(command)) {
@@ -105,30 +105,54 @@ public class MessageHandler {
             executor.sendMessage(chatId, text);
             return;
         }
-//        if (menuState.equals(MenuState.UNDEFINED)) {
-//            menuProcessor.process(message, role);
-//        } else if (menuState.equals(MenuState.SETTINGS)) {
-//            settingsProcessor.process(message, settingsState);
-//        } else if (getMenuState(chatId).equals(MenuState.ADD_BOOK)) {
-//            addBookProcessor.process(message, addBookState, role);
-//        } else if (menuState.equals(MenuState.SEARCH)) {
-//            searchBookProcessor.process(message, State.getSearchState(chatId));
-//        } else if (menuState.equals(MenuState.REMOVE_BOOK)) {
-//            removeBookProcessor.process(message, removeBookState);
-//        } else if (getMenuState(chatId).equals(MenuState.DOWNLOADED)) {
-//            downloadedBookProcessor.process(message);
-//        } else if (getMenuState(chatId).equals(MenuState.UPLOADED)) {
-//            uploadedBookProcessor.process(message);
-//        } else if (menuState.equals(MenuState.TOP)) {
-//            topBookProcessor.process(message);
-//        } else if (menuState.equals(MenuState.USERLIST)) {
-//            userListProcessor.process(message);
-//        } else if (menuState.equals(MenuState.ADD_MANAGER)) {
-//            addManagerProcessor.process(message, managerState);
-//        } else if (menuState.equals(MenuState.REMOVE_MANAGER)) {
-//            removeManagerProcessor.process(message, managerState);
-//        } else if (menuState.equals(MenuState.POST)) {
-//            postProcessor.process(message);
-//        }
+        if (menuState.equals(MenuState.UNDEFINED)) {
+
+            menuProcessor.sendMainMenu(chatId, role, null);
+
+        } else if (menuState.equals(MenuState.SETTINGS)) {
+
+            authUserProcessor.settingsProcess(message, state);
+
+        } else if (menuState.equals(MenuState.ADD_BOOK)) {
+
+            addBookProcessor.process(message, state, role);
+
+        } else if (menuState.equals(MenuState.SEARCH)) {
+
+            searchBookProcessor.process(message, State.getSearchState(chatId));
+
+        } else if (menuState.equals(MenuState.REMOVE_BOOK)) {
+
+            removeBookProcessor.process(message, removeBookState);
+
+        } else if (getMenuState(chatId).equals(MenuState.DOWNLOADED)) {
+
+            downloadedBookProcessor.process(message);
+
+        } else if (getMenuState(chatId).equals(MenuState.UPLOADED)) {
+
+            uploadedBookProcessor.process(message);
+
+        } else if (menuState.equals(MenuState.TOP)) {
+
+            topBookProcessor.process(message);
+
+        } else if (menuState.equals(MenuState.USERLIST)) {
+
+            userListProcessor.process(message);
+
+        } else if (menuState.equals(MenuState.ADD_MANAGER)) {
+
+            addManagerProcessor.process(message, managerState);
+
+        } else if (menuState.equals(MenuState.REMOVE_MANAGER)) {
+
+            removeManagerProcessor.process(message, managerState);
+
+        } else if (menuState.equals(MenuState.POST)) {
+
+            postProcessor.process(message);
+
+        }
     }
 }

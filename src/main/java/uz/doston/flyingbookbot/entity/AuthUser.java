@@ -8,6 +8,7 @@ import uz.doston.flyingbookbot.enums.AuthRole;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -47,5 +48,13 @@ public class AuthUser {
     @Column(nullable = false, columnDefinition = " TIMESTAMP WITH TIME ZONE default now()")
     @CreationTimestamp
     private LocalDateTime createdAt;
+
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "auth_user_books",
+            joinColumns = @JoinColumn(name = "auth_user_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "book_id", referencedColumnName = "id")
+    )
+    private List<Book> Books;
 
 }

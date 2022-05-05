@@ -4,8 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
-import javax.annotation.sql.DataSourceDefinitions;
 import javax.persistence.*;
 
 @Getter
@@ -26,12 +26,16 @@ public class Book {
     private String name;
 
     @Column(nullable = false)
+    private String genre;
+
+    @Column(nullable = false)
     private String size;
 
     @Column(nullable = false)
-    private String ownerId;
+    private Long ownerId;
 
-    @Column
+    @Column(nullable = false, columnDefinition = " TIMESTAMP WITH TIME ZONE default now()")
+    @CreationTimestamp
     private String uploadedAt;
 
     @Column
