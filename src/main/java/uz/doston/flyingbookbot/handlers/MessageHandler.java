@@ -26,7 +26,6 @@ import java.util.Objects;
 public class MessageHandler {
 
     private final AuthorizationProcessor authorizationProcessor;
-    @Lazy
     private final MenuProcessor menuProcessor;
     private final BookProcessor bookProcessor;
     private final AuthUserProcessor authUserProcessor;

@@ -1,7 +1,6 @@
 package uz.doston.flyingbookbot.processors;
 
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -15,26 +14,44 @@ import uz.doston.flyingbookbot.utils.Translate;
 import uz.doston.flyingbookbot.utils.UserState;
 
 @Component
-@RequiredArgsConstructor
 public class MenuProcessor {
 
     private final AuthUserService authUserService;
-
     private final BookProcessor bookProcessor;
     private final AuthUserProcessor authUserProcessor;
 
     private final Translate translate;
     private final MessageExecutor executor;
 
+    public MenuProcessor(AuthUserService authUserService,
+                         @Lazy BookProcessor bookProcessor,
+                         @Lazy AuthUserProcessor authUserProcessor,
+                         Translate translate,
+                         MessageExecutor executor) {
+        this.authUserService = authUserService;
+        this.bookProcessor = bookProcessor;
+        this.authUserProcessor = authUserProcessor;
+        this.translate = translate;
+        this.executor = executor;
+    }
+
     public void sendMainMenu(@NonNull String chatId, @NonNull AuthRole role, String text) {
         executor.sendMessage(chatId, text, getMenu(chatId, role));
     }
 
     private org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard getMenu(String chatId, AuthRole role) {
+
         return switch (role) {
-            case ADMIN -> ReplyKeyboard.adminMenu(chatId);
-            case MANAGER -> ReplyKeyboard.managerMenu(chatId);
-            case USER -> ReplyKeyboard.userMenu(chatId);
+
+            case ADMIN
+                    -> ReplyKeyboard.adminMenu(chatId);
+
+            case MANAGER
+                    -> ReplyKeyboard.managerMenu(chatId);
+
+            case USER
+                    -> ReplyKeyboard.userMenu(chatId);
+
         };
     }
 
