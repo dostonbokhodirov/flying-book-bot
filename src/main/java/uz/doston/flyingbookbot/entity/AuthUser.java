@@ -46,7 +46,6 @@ public class AuthUser {
     private String userName;
 
     @Column(nullable = false, columnDefinition = " TIMESTAMP WITH TIME ZONE default now()")
-    @CreationTimestamp
     private LocalDateTime createdAt;
 
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)

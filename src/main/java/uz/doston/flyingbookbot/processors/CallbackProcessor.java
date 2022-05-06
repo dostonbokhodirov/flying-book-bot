@@ -324,56 +324,102 @@ public class CallbackProcessor {
 
             if (UserState.getState(chatId).equals(State.SEARCH_NAME)) {
 
-                bookCriteria = BookCriteria.childBuilder().name(UserState.getSearchName(chatId)).page(page).size(UserState.getSize(chatId)).build();
+                bookCriteria = BookCriteria
+                        .childBuilder()
+                        .name(UserState.getSearchName(chatId))
+                        .page(page)
+                        .size(UserState.getSize(chatId))
+                        .build();
                 books = bookService.getAllByName(bookCriteria);
 
             } else {
 
-                bookCriteria = BookCriteria.childBuilder().genre(UserState.getSearchGenre(chatId)).page(page).size(UserState.getSize(chatId)).build();
+                bookCriteria = BookCriteria
+                        .childBuilder()
+                        .genre(UserState.getSearchGenre(chatId))
+                        .page(page)
+                        .size(UserState.getSize(chatId))
+                        .build();
                 books = bookService.getAllByGenre(bookCriteria);
 
             }
 
             List<Long> bookIds = books.stream().map(Book::getId).collect(Collectors.toList());
-            executor.editMessage(chatId, messageId, messages.bookMessage(books, chatId).toString(), InlineKeyboard.bookOrUserButtons(bookIds, bookCriteria));
+            executor.editMessage(
+                    chatId,
+                    messageId,
+                    messages.bookMessage(books, chatId).toString(),
+                    InlineKeyboard.bookOrUserButtons(bookIds, bookCriteria));
 
         } else if (UserState.getMenuState(chatId).equals(MenuState.TOP)) {
 
-            bookCriteria = BookCriteria.childBuilder().page(page).size(UserState.getSize(chatId)).build();
+            bookCriteria = BookCriteria
+                    .childBuilder()
+                    .page(page)
+                    .size(UserState.getSize(chatId))
+                    .build();
 
             books = bookService.getAllTopBooks(bookCriteria);
             List<Long> bookIds = books.stream().map(Book::getId).collect(Collectors.toList());
 
-            executor.editMessage(chatId, messageId, messages.bookMessage(books, chatId).toString(), InlineKeyboard.bookOrUserButtons(bookIds, bookCriteria));
+            executor.editMessage(
+                    chatId,
+                    messageId,
+                    messages.bookMessage(books, chatId).toString(),
+                    InlineKeyboard.bookOrUserButtons(bookIds, bookCriteria));
 
         } else if (UserState.getMenuState(chatId).equals(MenuState.UPLOADED)) {
 
-            bookCriteria = BookCriteria.childBuilder().page(page).size(UserState.getSize(chatId)).build();
+            bookCriteria = BookCriteria
+                    .childBuilder()
+                    .page(page)
+                    .size(UserState.getSize(chatId))
+                    .build();
 
-            books = bookService.getAllByUploaded(bookCriteria, chatId);
+            books = bookService.getAllUploadedBooks(bookCriteria, chatId);
             List<Long> bookIds = books.stream().map(Book::getId).collect(Collectors.toList());
 
-            executor.editMessage(chatId, messageId, messages.bookMessage(books, chatId).toString(), InlineKeyboard.bookOrUserButtons(bookIds, bookCriteria));
+            executor.editMessage(
+                    chatId,
+                    messageId,
+                    messages.bookMessage(books, chatId).toString(),
+                    InlineKeyboard.bookOrUserButtons(bookIds, bookCriteria));
 
         } else if (UserState.getMenuState(chatId).equals(MenuState.DOWNLOADED)) {
 
-            bookCriteria = BookCriteria.childBuilder().page(page).size(UserState.getSize(chatId)).build();
+            bookCriteria = BookCriteria
+                    .childBuilder()
+                    .page(page)
+                    .size(UserState.getSize(chatId))
+                    .build();
 
             AuthUserCriteria authUserCriteria = AuthUserCriteria.childBuilder().page(page).size(UserState.getSize(chatId)).chatId(chatId).build();
 
             books = authUserService.getAllDownloadedBooks(authUserCriteria);
             List<Long> bookIds = books.stream().map(Book::getId).collect(Collectors.toList());
 
-            executor.editMessage(chatId, messageId, messages.bookMessage(books, chatId).toString(), InlineKeyboard.bookOrUserButtons(bookIds, bookCriteria));
+            executor.editMessage(
+                    chatId,
+                    messageId,
+                    messages.bookMessage(books, chatId).toString(),
+                    InlineKeyboard.bookOrUserButtons(bookIds, bookCriteria));
 
         } else if (UserState.getMenuState(chatId).equals(MenuState.USER_LIST)) {
 
-            AuthUserCriteria authUserCriteria = AuthUserCriteria.childBuilder().page(page).size(UserState.getSize(chatId)).build();
+            AuthUserCriteria authUserCriteria = AuthUserCriteria
+                    .childBuilder()
+                    .page(page)
+                    .size(UserState.getSize(chatId))
+                    .build();
 
             List<AuthUser> authUsers = authUserService.getAll(authUserCriteria);
             List<Long> authUserIds = authUsers.stream().map(AuthUser::getId).toList();
 
-            executor.editMessage(chatId, messageId, messages.authUserMessage(authUsers, chatId).toString(), InlineKeyboard.bookOrUserButtons(authUserIds, authUserCriteria));
+            executor.editMessage(
+                    chatId,
+                    messageId,
+                    messages.authUserMessage(authUsers, chatId).toString(),
+                    InlineKeyboard.bookOrUserButtons(authUserIds, authUserCriteria));
 
         }
     }
@@ -399,13 +445,19 @@ public class CallbackProcessor {
             List<Book> books = authUser.getBooks();
             books.add(book);
 
-            AuthUserUpdateDTO dto = AuthUserUpdateDTO.builder().chatId(chatId).books(books).build();
+            AuthUserUpdateDTO dto = AuthUserUpdateDTO
+                    .builder()
+                    .chatId(chatId)
+                    .books(books)
+                    .build();
 
             authUserService.update(dto);
-            executor.sendMessage(chatId, "%s%s".formatted(Emojis.ADD, translate.getTranslation("book.added", language)));
+            executor.sendMessage(chatId,
+                    "%s%s".formatted(Emojis.ADD, translate.getTranslation("book.added", language)));
 
         } else
-            executor.sendMessage(chatId, "%s%s".formatted(Emojis.LOOK, translate.getTranslation("already.add", language)));
+            executor.sendMessage(chatId,
+                    "%s%s".formatted(Emojis.LOOK, translate.getTranslation("already.add", language)));
     }
 
     public void removeProcess(Message message) {
@@ -419,10 +471,15 @@ public class CallbackProcessor {
         List<Book> books = authUser.getBooks();
         books.remove(book);
 
-        AuthUserUpdateDTO dto = AuthUserUpdateDTO.builder().chatId(chatId).books(books).build();
+        AuthUserUpdateDTO dto = AuthUserUpdateDTO
+                .builder()
+                .chatId(chatId)
+                .books(books)
+                .build();
 
         authUserService.update(dto);
-        executor.sendMessage(chatId, "%s%s".formatted(Emojis.ADD, translate.getTranslation("book.removed", language)));
+        executor.sendMessage(chatId,
+                "%s%s".formatted(Emojis.ADD, translate.getTranslation("book.removed", language)));
     }
 
     public void genreProcess(Message message) {
@@ -431,7 +488,12 @@ public class CallbackProcessor {
         String language = UserState.getLanguage(chatId);
         UserState.setState(chatId, State.SEARCH_GENRE);
         UserState.setMenuState(chatId, MenuState.SEARCH);
-        executor.editMessage(chatId, messageId, "%s %s".formatted(Emojis.GENRE, translate.getTranslation("choose.genre", language)), InlineKeyboard.genreButtons(chatId));
+
+        executor.editMessage(
+                chatId,
+                messageId,
+                "%s %s".formatted(Emojis.GENRE, translate.getTranslation("choose.genre", language)),
+                InlineKeyboard.genreButtons(chatId));
     }
 
     public void nameProcess(Message message) {
@@ -442,7 +504,8 @@ public class CallbackProcessor {
         executor.deleteMessage(chatId, messageId);
 
         UserState.setState(chatId, State.SEARCH_NAME);
-        executor.sendMessage(chatId, Emojis.SEARCH + " " + translate.getTranslation("enter.book", language));
+        executor.sendMessage(chatId,
+                "%s %s".formatted(Emojis.SEARCH, translate.getTranslation("enter.book", language)));
         UserState.setMenuState(chatId, MenuState.SEARCH);
         UserState.setPage(chatId, 0);
     }
@@ -462,7 +525,8 @@ public class CallbackProcessor {
             UserState.removeBookCreateDTO(chatId);
 
 
-            executor.sendMessage(chatId, "%s %s".formatted(Emojis.ADD, translate.getTranslation("file.uploaded", language)));
+            executor.sendMessage(chatId,
+                    "%s %s".formatted(Emojis.ADD, translate.getTranslation("file.uploaded", language)));
 
             UserState.setState(chatId, State.UNDEFINED);
             UserState.setMenuState(chatId, MenuState.UNDEFINED);
@@ -471,7 +535,12 @@ public class CallbackProcessor {
 
             UserState.setSearchGenre(chatId, data);
 
-            BookCriteria bookCriteria = BookCriteria.childBuilder().genre(data).page(UserState.getPage(chatId)).size(UserState.getSize(chatId)).build();
+            BookCriteria bookCriteria = BookCriteria
+                    .childBuilder()
+                    .genre(data)
+                    .page(UserState.getPage(chatId))
+                    .size(UserState.getSize(chatId))
+                    .build();
 
             List<Book> books = bookService.getAllByGenre(bookCriteria);
 
@@ -481,7 +550,7 @@ public class CallbackProcessor {
 
             if (books.size() == 0) {
 
-                editMessageText.setText(translate.getTranslation("no.book.genre", language));
+                executor.editMessage(chatId, messageId, translate.getTranslation("no.book.genre", language));
                 UserState.setMenuState(chatId, MenuState.UNDEFINED);
                 UserState.setState(chatId, State.UNDEFINED);
 
@@ -489,9 +558,17 @@ public class CallbackProcessor {
 
                 UserState.setPage(chatId, 0);
                 List<Long> bookIds = books.stream().map(Book::getId).toList();
-                bookCriteria = BookCriteria.childBuilder().page(UserState.getPage(chatId)).size(UserState.getSize(chatId)).build();
+                bookCriteria = BookCriteria
+                        .childBuilder()
+                        .page(UserState.getPage(chatId))
+                        .size(UserState.getSize(chatId))
+                        .build();
 
-                executor.editMessage(chatId, messageId, messages.bookMessage(books, chatId).toString(), InlineKeyboard.bookOrUserButtons(bookIds, bookCriteria));
+                executor.editMessage(
+                        chatId,
+                        messageId,
+                        messages.bookMessage(books, chatId).toString(),
+                        InlineKeyboard.bookOrUserButtons(bookIds, bookCriteria));
             }
         }
     }
@@ -518,7 +595,13 @@ public class CallbackProcessor {
 
         UserState.setSize(chatId, size);
         executor.deleteMessage(chatId, messageId);
-        executor.sendMessage(chatId, "%s %s\n%s%d".formatted(Emojis.ADD, translate.getTranslation("limit.changed", language), translate.getTranslation("current.limit", language), UserState.getSize(chatId)));
+        executor.sendMessage(
+                chatId,
+                "%s %s\n%s%d".formatted(
+                        Emojis.ADD,
+                        translate.getTranslation("limit.changed", language),
+                        translate.getTranslation("current.limit", language),
+                        UserState.getSize(chatId)));
     }
 
     public void documentOrAuthUserProcess(Message message, String data) {

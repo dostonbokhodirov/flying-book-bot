@@ -1,6 +1,7 @@
 package uz.doston.flyingbookbot.handlers;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import uz.doston.flyingbookbot.buttons.InlineKeyboard;
@@ -25,6 +26,7 @@ import java.util.Objects;
 public class MessageHandler {
 
     private final AuthorizationProcessor authorizationProcessor;
+    @Lazy
     private final MenuProcessor menuProcessor;
     private final BookProcessor bookProcessor;
     private final AuthUserProcessor authUserProcessor;
@@ -108,7 +110,7 @@ public class MessageHandler {
         }
 
         switch (menuState) {
-            case UNDEFINED -> menuProcessor.sendMainMenu(chatId, role, "");
+            case UNDEFINED -> menuProcessor.process(message, role); // TODO: 5/6/2022 missed process method in menuProcessor
             case SETTINGS -> authUserProcessor.settingsProcess(message, state);
             case ADD_BOOK -> bookProcessor.addBookProcess(message, state, role);
             case SEARCH -> bookProcessor.searchBookProcess(message, state);
@@ -116,9 +118,9 @@ public class MessageHandler {
             case DOWNLOADED -> bookProcessor.downloadedBookProcess(message);
             case UPLOADED -> bookProcessor.uploadedBookProcess(message);
             case TOP -> bookProcessor.topBookProcess(message);
-            case USER_LIST -> authUserProcessor.authUserListProcess(message);
+            case USER_LIST -> authUserProcessor.process(message);
             case ADD_MANAGER -> authUserProcessor.addManagerProcess(message, state);
-            case REMOVE_MANAGER -> authUserProcessor.removeManagerProcess(message, UserState.getState(chatId));
+            case REMOVE_MANAGER -> authUserProcessor.removeManagerProcess(message, state);
             case POST -> authUserProcessor.postProcess(message);
         }
     }

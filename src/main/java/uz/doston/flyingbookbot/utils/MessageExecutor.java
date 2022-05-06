@@ -5,8 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.AnswerInlineQuery;
-import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.*;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
@@ -66,8 +65,16 @@ public record MessageExecutor(@Lazy FlyingBookBot bot) {
         }
     }
 
+    public void sendDocument(String chatId, String fileId) {
+        sendDocument(chatId, fileId, null, null);
+    }
+
     public void sendDocument(String chatId, String fileId, ReplyKeyboard replyKeyboard) {
         sendDocument(chatId, fileId, null, replyKeyboard);
+    }
+
+    public void sendDocument(String chatId, String fileId, String caption) {
+        sendDocument(chatId, fileId, caption, null);
     }
 
 
@@ -83,4 +90,83 @@ public record MessageExecutor(@Lazy FlyingBookBot bot) {
             log.error(e.getMessage(), e);
         }
     }
+
+    public void sendPhoto(String chatId, String fileId) {
+        sendPhoto(chatId, fileId, null, null);
+    }
+
+    public void sendPhoto(String chatId, String fileId, ReplyKeyboard replyKeyboard) {
+        sendPhoto(chatId, fileId, null, replyKeyboard);
+    }
+
+    public void sendPhoto(String chatId, String fileId, String caption) {
+        sendPhoto(chatId, fileId, caption, null);
+    }
+
+
+    public void sendPhoto(String chatId, String fileId, String caption, ReplyKeyboard replyKeyboard) {
+        SendPhoto message = new SendPhoto();
+        message.setChatId(chatId);
+        message.setPhoto(new InputFile(fileId));
+        message.setReplyMarkup(replyKeyboard);
+        message.setCaption(caption);
+        try {
+            bot.execute(message);
+        } catch (TelegramApiException e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
+    public void sendVideo(String chatId, String fileId) {
+        sendVideo(chatId, fileId, null, null);
+    }
+
+    public void sendVideo(String chatId, String fileId, ReplyKeyboard replyKeyboard) {
+        sendVideo(chatId, fileId, null, replyKeyboard);
+    }
+
+    public void sendVideo(String chatId, String fileId, String caption) {
+        sendVideo(chatId, fileId, caption, null);
+    }
+
+
+    public void sendVideo(String chatId, String fileId, String caption, ReplyKeyboard replyKeyboard) {
+        SendVideo message = new SendVideo();
+        message.setChatId(chatId);
+        message.setVideo(new InputFile(fileId));
+        message.setReplyMarkup(replyKeyboard);
+        message.setCaption(caption);
+        try {
+            bot.execute(message);
+        } catch (TelegramApiException e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
+    public void sendAudio(String chatId, String fileId) {
+        sendAudio(chatId, fileId, null, null);
+    }
+
+    public void sendAudio(String chatId, String fileId, ReplyKeyboard replyKeyboard) {
+        sendAudio(chatId, fileId, null, replyKeyboard);
+    }
+
+    public void sendAudio(String chatId, String fileId, String caption) {
+        sendAudio(chatId, fileId, caption, null);
+    }
+
+
+    public void sendAudio(String chatId, String fileId, String caption, ReplyKeyboard replyKeyboard) {
+        SendAudio message = new SendAudio();
+        message.setChatId(chatId);
+        message.setAudio(new InputFile(fileId));
+        message.setReplyMarkup(replyKeyboard);
+        message.setCaption(caption);
+        try {
+            bot.execute(message);
+        } catch (TelegramApiException e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
 }

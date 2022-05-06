@@ -11,7 +11,7 @@ import java.util.List;
 
 public interface BookRepository extends JpaRepository<Book, Long> {
 
-    List<Book> findAllByDownloadsCount(Pageable pageable);
+//    List<Book> findAllByDownloadsCount(Pageable pageable);
 
     List<Book> findAllByNameContainingIgnoreCase(String name, Pageable pageable);
 
@@ -19,7 +19,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     List<Book> findAllByOwnerId(Long ownerId, Pageable pageable);
 
-    List<Book> findAllByIdAndOwnerId(Long id, Long ownerId, Pageable pageable);
+    Book findFirstByNameContainingIgnoreCase(String name);
 
     @Query(value = "select * from book where name like :query", nativeQuery = true)
     List<InlineQueryResult> findByQuery(@Param("query") String query);

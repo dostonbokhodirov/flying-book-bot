@@ -27,8 +27,8 @@ public class BookService {
     }
 
     public List<Book> getAllTopBooks(BookCriteria criteria) {
-        Pageable pageable = PageRequest.of(criteria.getPage(), criteria.getSize(), Sort.Direction.DESC);
-        return bookRepository.findAllByDownloadsCount(pageable);
+        Pageable pageable = PageRequest.of(criteria.getPage(), criteria.getSize(), Sort.by("downloadsCount").descending());
+        return bookRepository.findAll(pageable).getContent();
     }
 
     public List<InlineQueryResult> getAllByMatches(String query) {
@@ -54,7 +54,7 @@ public class BookService {
         return bookRepository.findAllByNameContainingIgnoreCase(criteria.getName(), pageable);
     }
 
-    public List<Book> getAllByUploaded(BookCriteria criteria, String chatId) {
+    public List<Book> getAllUploadedBooks(BookCriteria criteria, String chatId) {
         Long authUserid = authUserRepository.findIdByChatId(chatId);
         Pageable pageable = PageRequest.of(criteria.getPage(), criteria.getSize(), Sort.Direction.DESC);
         return bookRepository.findAllByOwnerId(authUserid, pageable);
@@ -70,5 +70,10 @@ public class BookService {
 
     public void update(Book target) {
         bookRepository.save(target);
+    }
+
+    public void deleteByName(String name) {
+        Book book = bookRepository.findFirstByNameContainingIgnoreCase(name);
+        bookRepository.delete(book);
     }
 }

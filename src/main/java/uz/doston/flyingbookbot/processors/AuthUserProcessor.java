@@ -10,6 +10,7 @@ import uz.doston.flyingbookbot.buttons.ReplyKeyboard;
 import uz.doston.flyingbookbot.criteria.AuthUserCriteria;
 import uz.doston.flyingbookbot.dto.AuthUserUpdateDTO;
 import uz.doston.flyingbookbot.entity.AuthUser;
+import uz.doston.flyingbookbot.enums.AuthRole;
 import uz.doston.flyingbookbot.enums.MenuState;
 import uz.doston.flyingbookbot.enums.State;
 import uz.doston.flyingbookbot.service.AuthUserService;
@@ -30,6 +31,7 @@ public class AuthUserProcessor {
     private final Messages messages;
 
     public void process(Message message) {
+
         String chatId = message.getChatId().toString();
         AuthUserCriteria authUserCriteria = AuthUserCriteria
                 .childBuilder()
@@ -38,11 +40,14 @@ public class AuthUserProcessor {
                 .build();
 
         List<AuthUser> authUsers = authUserService.getAll(authUserCriteria);
-
-        String text = messages.authUserMessage(authUsers, chatId).toString();
         List<Long> authUserIds = authUsers.stream().map(AuthUser::getId).collect(Collectors.toList());
-        executor.sendMessage(chatId, text, InlineKeyboard.bookOrUserButtons(authUserIds, authUserCriteria));
+
+        executor.sendMessage(
+                chatId,
+                messages.authUserMessage(authUsers, chatId).toString(),
+                InlineKeyboard.bookOrUserButtons(authUserIds, authUserCriteria));
         UserState.setMenuState(chatId, MenuState.UNDEFINED);
+
     }
 
     public void settingsProcess(Message message, State state) {
@@ -236,6 +241,128 @@ public class AuthUserProcessor {
             menuProcessor.sendSettingsMenu(chatId, translate.getTranslation("wrong.button", language));
 
         }
+    }
+
+    public void addManagerProcess(Message message, State state) {
+
+        String chatId = message.getChatId().toString();
+        String text = message.getText();
+        String language = UserState.getLanguage(chatId);
+        if (state.equals(State.UNDEFINED)) {
+
+            executor.sendMessage(chatId, translate.getTranslation("enter.user.id", language));
+            UserState.setState(chatId, State.ADD_REMOVE_MANAGER);
+
+        } else if (state.equals(State.ADD_REMOVE_MANAGER)) {
+
+            if (!StringUtils.isNumeric(text)) {
+
+                executor.sendMessage(chatId,
+                        "%s %s".formatted(Emojis.REMOVE, translate.getTranslation("id.consists", language)));
+                UserState.setState(chatId, State.UNDEFINED);
+                UserState.setMenuState(chatId, MenuState.UNDEFINED);
+                return;
+
+            }
+
+            AuthRole authRole = authUserService.getRoleByChatId(text);
+            if (Objects.isNull(authRole)) {
+                authRole = authUserService.getRoleByPhoneNumber(text);
+            }
+
+            if (Objects.nonNull(authRole) && (authRole.equals(AuthRole.MANAGER))) {
+
+                executor.sendMessage(chatId,
+                        "%s%s".formatted(Emojis.REALLY, translate.getTranslation("already.manager", language)));
+
+            } else if (Objects.isNull(authRole)) {
+
+                executor.sendMessage(chatId,
+                        "%s %s".formatted(Emojis.REMOVE, translate.getTranslation("user.not.found", language)));
+
+            } else {
+
+                executor.sendMessage(
+                        chatId,
+                        "%s %s".formatted(Emojis.ADD, translate.getTranslation("user.changed.manager", language)),
+                        ReplyKeyboard.adminMenu(chatId));
+
+            }
+
+            UserState.setState(chatId, State.UNDEFINED);
+            UserState.setMenuState(chatId, MenuState.UNDEFINED);
+        }
+    }
+
+    public void removeManagerProcess(Message message, State state) {
+        String chatId = message.getChatId().toString();
+        String text = message.getText();
+        String language = UserState.getLanguage(chatId);
+        if (state.equals(State.UNDEFINED)) {
+
+            executor.sendMessage(chatId, translate.getTranslation("enter.user.id", language));
+            UserState.setState(chatId, State.ADD_REMOVE_MANAGER);
+
+        } else if (state.equals(State.ADD_REMOVE_MANAGER)) {
+
+            if (!StringUtils.isNumeric(text)) {
+
+                executor.sendMessage(chatId,
+                        "%s %s".formatted(Emojis.REMOVE, translate.getTranslation("id.consists", language)));
+                UserState.setState(chatId, State.UNDEFINED);
+                UserState.setMenuState(chatId, MenuState.UNDEFINED);
+                return;
+
+            }
+
+            AuthRole authRole = authUserService.getRoleByChatId(text);
+            if (Objects.isNull(authRole)) {
+                authRole = authUserService.getRoleByPhoneNumber(text);
+            }
+
+            if (Objects.nonNull(authRole) && (authRole.equals(AuthRole.USER))) {
+
+                executor.sendMessage(chatId,
+                        "%s %s".formatted(Emojis.REALLY, translate.getTranslation("already.user", language)));
+
+            } else if (Objects.isNull(authRole)) {
+
+                executor.sendMessage(chatId,
+                        "%s %s".formatted(Emojis.REMOVE, translate.getTranslation("user.not.found", language)));
+
+            } else {
+
+                executor.sendMessage(
+                        chatId,
+                        "%s %s".formatted(Emojis.ADD, translate.getTranslation("user.changed.user", language)),
+                        ReplyKeyboard.adminMenu(chatId));
+
+            }
+
+            UserState.setState(chatId, State.UNDEFINED);
+            UserState.setMenuState(chatId, MenuState.UNDEFINED);
+
+        }
+    }
+
+    public void postProcess(Message message) {
+        String chatId = message.getChatId().toString();
+        List<String> chatIdList = authUserService.getAllChatIdsByRole(AuthRole.USER);
+
+        if (message.hasPhoto()) {
+            chatIdList.forEach(
+                    id -> executor.sendPhoto(id, message.getPhoto().get(0).getFileId(), message.getCaption()));
+        } else if (message.hasVideo()) {
+            chatIdList.forEach(
+                    id -> executor.sendVideo(id, message.getVideo().getFileId(), message.getCaption()));
+        } else if (message.hasAudio()) {
+            chatIdList.forEach(id -> executor.sendAudio(id, message.getAudio().getFileId(), message.getCaption()));
+        } else if (message.hasDocument()) {
+            chatIdList.forEach(id -> executor.sendDocument(id, message.getDocument().getFileId(), message.getCaption()));
+        } else {
+            chatIdList.forEach(id -> executor.sendMessage(id, message.getText()));
+        }
+        UserState.setMenuState(chatId, MenuState.UNDEFINED);
     }
 
 }

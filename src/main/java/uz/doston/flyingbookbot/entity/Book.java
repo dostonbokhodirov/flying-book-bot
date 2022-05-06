@@ -35,7 +35,6 @@ public class Book {
     private Long ownerId;
 
     @Column(nullable = false, columnDefinition = " TIMESTAMP WITH TIME ZONE default now()")
-    @CreationTimestamp
     private String uploadedAt;
 
     @Column

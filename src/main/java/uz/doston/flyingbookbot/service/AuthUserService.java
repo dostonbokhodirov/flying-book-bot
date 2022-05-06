@@ -92,8 +92,8 @@ public class AuthUserService {
     }
 
     public List<AuthUser> getAll(AuthUserCriteria criteria) {
-        Pageable pageable = PageRequest.of(criteria.getPage(), criteria.getSize(), Sort.Direction.DESC);
-        return authUserRepository.findAllByCreatedAt(pageable);
+        Pageable pageable = PageRequest.of(criteria.getPage(), criteria.getSize(), Sort.by("createdAt").descending());
+        return authUserRepository.findAll(pageable).getContent();
     }
 
     public void update(AuthUserUpdateDTO dto) {
@@ -105,9 +105,8 @@ public class AuthUserService {
     public List<Book> getAllDownloadedBooks(AuthUserCriteria criteria) {
         // TODO: 5/4/2022 wrong approach, must pagination book list
 
-//        Pageable pageable = PageRequest.of(criteria.getPage(), criteria.getSize(), Sort.Direction.DESC);
-//        AuthUser authUser = authUserRepository.findByChatId(criteria.getChatId(), pageable);
-//        return authUser.getBooks();
+        Pageable pageable = PageRequest.of(criteria.getPage(), criteria.getSize(), Sort.Direction.DESC);
+//        return authUserRepository.findDownloadedBooksByChatId(criteria.getChatId(), pageable);
         return null;
     }
 
@@ -131,5 +130,18 @@ public class AuthUserService {
 
     public String getPhoneNumberByChatId(String chatId) {
         return authUserRepository.findPhoneNumberByChatId(chatId);
+    }
+
+    public AuthUser getRandomByRole(AuthRole role) {
+        return authUserRepository.findRandomByRole(role);
+    }
+
+    public AuthRole getRoleByPhoneNumber(String phoneNumber) {
+        return authUserRepository.findAuthRoleByPhoneNumber(phoneNumber);
+    }
+
+    public List<String> getAllChatIdsByRole(AuthRole role) {
+        List<AuthUser> authUsers = authUserRepository.findAll();
+        return authUsers.stream().map(AuthUser::getChatId).toList();
     }
 }
