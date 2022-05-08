@@ -7,6 +7,7 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -34,8 +35,9 @@ public class Book {
     @Column(nullable = false)
     private Long ownerId;
 
-    @Column(nullable = false, columnDefinition = " TIMESTAMP WITH TIME ZONE default now()")
-    private String uploadedAt;
+    @CreationTimestamp
+    @Column(nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE default now()")
+    private LocalDateTime uploadedAt;
 
     @Column
     private Integer downloadsCount;

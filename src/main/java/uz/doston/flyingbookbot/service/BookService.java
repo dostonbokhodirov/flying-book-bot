@@ -27,7 +27,11 @@ public class BookService {
     }
 
     public List<Book> getAllTopBooks(BookCriteria criteria) {
-        Pageable pageable = PageRequest.of(criteria.getPage(), criteria.getSize(), Sort.by("downloadsCount").descending());
+        Pageable pageable = PageRequest.of(
+                criteria.getPage(),
+                criteria.getSize(),
+                Sort.by("downloadsCount").descending()
+        );
         return bookRepository.findAll(pageable).getContent();
     }
 
@@ -45,18 +49,30 @@ public class BookService {
     }
 
     public List<Book> getAllByGenre(BookCriteria criteria) {
-        Pageable pageable = PageRequest.of(criteria.getPage(), criteria.getSize(), Sort.Direction.DESC);
+        Pageable pageable = PageRequest.of(
+                criteria.getPage(),
+                criteria.getSize(),
+                Sort.by("uploadedAt").descending()
+        );
         return bookRepository.findAllByGenreContainingIgnoreCase(criteria.getGenre(), pageable);
     }
 
     public List<Book> getAllByName(BookCriteria criteria) {
-        Pageable pageable = PageRequest.of(criteria.getPage(), criteria.getSize(), Sort.Direction.DESC);
+        Pageable pageable = PageRequest.of(
+                criteria.getPage(),
+                criteria.getSize(),
+                Sort.by("uploadedAt").descending()
+        );
         return bookRepository.findAllByNameContainingIgnoreCase(criteria.getName(), pageable);
     }
 
     public List<Book> getAllUploadedBooks(BookCriteria criteria, String chatId) {
         Long authUserid = authUserRepository.findIdByChatId(chatId);
-        Pageable pageable = PageRequest.of(criteria.getPage(), criteria.getSize(), Sort.Direction.DESC);
+        Pageable pageable = PageRequest.of(
+                criteria.getPage(),
+                criteria.getSize(),
+                Sort.by("uploadedAt").descending()
+        );
         return bookRepository.findAllByOwnerId(authUserid, pageable);
     }
 

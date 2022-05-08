@@ -19,20 +19,22 @@ public class MenuProcessor {
     private final AuthUserService authUserService;
     private final BookProcessor bookProcessor;
     private final AuthUserProcessor authUserProcessor;
-
     private final Translate translate;
     private final MessageExecutor executor;
+    private final ReplyKeyboard replyKeyboard;
 
     public MenuProcessor(AuthUserService authUserService,
                          @Lazy BookProcessor bookProcessor,
                          @Lazy AuthUserProcessor authUserProcessor,
                          Translate translate,
-                         MessageExecutor executor) {
+                         MessageExecutor executor,
+                         ReplyKeyboard replyKeyboard) {
         this.authUserService = authUserService;
         this.bookProcessor = bookProcessor;
         this.authUserProcessor = authUserProcessor;
         this.translate = translate;
         this.executor = executor;
+        this.replyKeyboard = replyKeyboard;
     }
 
     public void sendMainMenu(@NonNull String chatId, @NonNull AuthRole role, String text) {
@@ -43,14 +45,11 @@ public class MenuProcessor {
 
         return switch (role) {
 
-            case ADMIN
-                    -> ReplyKeyboard.adminMenu(chatId);
+            case ADMIN -> replyKeyboard.adminMenu(chatId);
 
-            case MANAGER
-                    -> ReplyKeyboard.managerMenu(chatId);
+            case MANAGER -> replyKeyboard.managerMenu(chatId);
 
-            case USER
-                    -> ReplyKeyboard.userMenu(chatId);
+            case USER -> replyKeyboard.userMenu(chatId);
 
         };
     }
@@ -59,7 +58,7 @@ public class MenuProcessor {
         executor.sendMessage(chatId, text.equals(
                 translate.getTranslation("wrong.button", UserState.getLanguage(chatId)))
                 ? "%s %s".formatted(Emojis.REMOVE, text)
-                : text, ReplyKeyboard.settingsMenu(chatId));
+                : text, replyKeyboard.settingsMenu(chatId));
     }
 
     public void process(Message message, AuthRole role) {
@@ -115,22 +114,18 @@ public class MenuProcessor {
 
             if (("%s %s".formatted(Emojis.ADD_BOOK, translate.getTranslation("add.book", language))).equals(text)) {
 
-                UserState.setMenuState(chatId, MenuState.ADD_BOOK);
                 bookProcessor.addBookProcess(message, UserState.getState(chatId), role);
 
             } else if (("%s %s".formatted(Emojis.REMOVE_BOOK, translate.getTranslation("remove.book", language))).equals(text)) {
 
-                UserState.setMenuState(chatId, MenuState.REMOVE_BOOK);
                 bookProcessor.removeBookProcess(message, UserState.getState(chatId));
 
             } else if (("%s %s".formatted(Emojis.DOWNLOAD, translate.getTranslation("downloaded.books", language))).equals(text)) {
 
-                UserState.setMenuState(chatId, MenuState.DOWNLOADED);
                 bookProcessor.downloadedBookProcess(message);
 
             } else if (("%s %s".formatted(Emojis.UPLOAD, translate.getTranslation("uploaded.books", language))).equals(text)) {
 
-                UserState.setMenuState(chatId, MenuState.UPLOADED);
                 bookProcessor.uploadedBookProcess(message);
 
             } else {
@@ -154,32 +149,26 @@ public class MenuProcessor {
 
             if (("%s %s".formatted(Emojis.ADD, translate.getTranslation("add.manager", language))).equals(text)) {
 
-                UserState.setMenuState(chatId, MenuState.ADD_MANAGER);
                 authUserProcessor.addManagerProcess(message, UserState.getState(chatId));
 
             } else if (("%s %s".formatted(Emojis.REMOVE, translate.getTranslation("remove.manager", language))).equals(text)) {
 
-                UserState.setMenuState(chatId, MenuState.REMOVE_MANAGER);
                 authUserProcessor.removeManagerProcess(message, UserState.getState(chatId));
 
             } else if (("%s %s".formatted(Emojis.ADD_BOOK, translate.getTranslation("add.book", language))).equals(text)) {
 
-                UserState.setMenuState(chatId, MenuState.ADD_BOOK);
                 bookProcessor.addBookProcess(message, UserState.getState(chatId), role);
 
             } else if (("%s %s".formatted(Emojis.REMOVE_BOOK, translate.getTranslation("remove.book", language))).equals(text)) {
 
-                UserState.setMenuState(chatId, MenuState.REMOVE_BOOK);
                 bookProcessor.removeBookProcess(message, UserState.getState(chatId));
 
             } else if (("%s %s".formatted(Emojis.DOWNLOAD, translate.getTranslation("downloaded.books", language))).equals(text)) {
 
-                UserState.setMenuState(chatId, MenuState.DOWNLOADED);
                 bookProcessor.downloadedBookProcess(message);
 
             } else if (("%s %s".formatted(Emojis.UPLOAD, translate.getTranslation("uploaded.books", language))).equals(text)) {
 
-                UserState.setMenuState(chatId, MenuState.UPLOADED);
                 bookProcessor.uploadedBookProcess(message);
 
             } else {

@@ -8,6 +8,7 @@ import uz.doston.flyingbookbot.enums.AuthRole;
 import uz.doston.flyingbookbot.service.AuthUserService;
 import uz.doston.flyingbookbot.service.BookService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
@@ -66,7 +67,7 @@ public class Messages {
     public StringBuilder bookMessage(List<Book> books, String chatId) {
         String language = UserState.getLanguage(chatId);
         StringBuilder text = new StringBuilder();
-        int i = 0;
+        int i = 1;
         if (books.size() == 0) text.append(translate.getTranslation("no.book", language));
         else for (Book book : books) {
             double size = getByMegabytes(book.getSize());
@@ -88,7 +89,7 @@ public class Messages {
     public StringBuilder authUserMessage(List<AuthUser> authUsers, String chatId) {
         String language = UserState.getLanguage(chatId);
         StringBuilder text = new StringBuilder();
-        int i = 0;
+        int i = 1;
         if (authUsers.size() == 0) text.append(translate.getTranslation("no.user", language));
         else for (AuthUser user : authUsers) {
             text.append("<code>")
@@ -103,6 +104,44 @@ public class Messages {
                     .append(user.getRole()).append("</code>\n");
         }
         return text;
+    }
+
+    public StringBuilder detailAuthUserMessage(String chatId) {
+        String language = UserState.getLanguage(chatId);
+        AuthUser authUser = authUserService.getByChatId(chatId);
+
+        String id = authUser.getChatId();
+        String fullName = authUser.getFullName();
+        Integer age = authUser.getAge();
+        String gender = authUser.getGender();
+        String phoneNumber = authUser.getPhoneNumber();
+        String userLanguage = authUser.getLanguage();
+        String role = authUser.getRole().toString();
+        String userName = authUser.getUserName();
+        LocalDateTime createdAt = authUser.getCreatedAt();
+
+        StringBuilder stringBuilder = new StringBuilder();
+
+        stringBuilder
+                .append("ID: <code>").append(id).append("</code>\n")
+                .append(translate.getTranslation("user.full.name", language))
+                .append(" <b>").append(fullName).append("</b>\n")
+                .append(translate.getTranslation("user.age", language))
+                .append(" <b>").append(age).append("</b>\n")
+                .append(translate.getTranslation("user.gender", language))
+                .append(" <code>").append(gender).append("</code>\n")
+                .append(translate.getTranslation("user.phone.number", language))
+                .append(" <b>").append(phoneNumber).append("</b>\n")
+                .append(translate.getTranslation("user.language", language))
+                .append(" <code>").append(userLanguage).append("</code>\n")
+                .append(translate.getTranslation("user.role", language))
+                .append(" <code>").append(role).append("</code>\n")
+                .append(translate.getTranslation("user.name", language))
+                .append(" @").append(userName).append("\n")
+                .append(translate.getTranslation("user.created.at", language))
+                .append(" <code>").append(createdAt).append("</code>\n");
+
+        return stringBuilder;
     }
 
     private double getByMegabytes(String byteSize) {

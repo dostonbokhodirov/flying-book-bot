@@ -21,18 +21,18 @@ import uz.doston.flyingbookbot.utils.UserState;
 public class AuthorizationProcessor {
 
     private final AuthUserService authUserService;
-
     private final MessageExecutor executor;
     private final Translate translate;
+    private final InlineKeyboard inlineKeyboard;
 
     public void process(Message message, State state) {
         String chatId = message.getChatId().toString();
         String language = UserState.getLanguage(chatId);
-        if (State.USER_LANG.equals(state) || State.USER_ANONYMOUS.equals(state)) {
+        if (State.USER_LANG.equals(state) || State.UNDEFINED.equals(state)) {
             executor.sendMessage(chatId, """
                     Tilni tanlang:
                     Выберите язык:
-                    Choose your language:""", InlineKeyboard.languageButtons());
+                    Choose your language:""", inlineKeyboard.languageButtons());
             UserState.setState(chatId, State.DELETE_ALL);
         } else if (State.USER_FULL_NAME.equals(state)) {
             String text = message.getText();
@@ -45,6 +45,7 @@ public class AuthorizationProcessor {
                         new ForceReplyKeyboard(true));
             } else {
                 AuthUserCreateDTO dto = UserState.getUserCreateDTO(chatId);
+                dto.setChatId(chatId);
                 dto.setFullName(text);
                 UserState.setUserCreateDTO(chatId, dto);
 
@@ -63,7 +64,7 @@ public class AuthorizationProcessor {
                     executor.sendMessage(
                             chatId,
                             translate.getTranslation("enter.gender", language),
-                            InlineKeyboard.genderButtons(chatId));
+                            inlineKeyboard.genderButtons(chatId));
                     UserState.setState(chatId, State.DELETE_ALL);
                 } else {
                     executor.sendMessage(chatId, "%s %s\n%s".formatted(

@@ -1,9 +1,6 @@
 package uz.doston.flyingbookbot.utils;
 
 import org.springframework.context.MessageSource;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
-import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;

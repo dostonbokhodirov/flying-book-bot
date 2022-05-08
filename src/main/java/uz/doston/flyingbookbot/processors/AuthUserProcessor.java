@@ -29,6 +29,8 @@ public class AuthUserProcessor {
     private final Translate translate;
 
     private final Messages messages;
+    private final InlineKeyboard inlineKeyboard;
+    private final ReplyKeyboard replyKeyboard;
 
     public void process(Message message) {
 
@@ -45,7 +47,7 @@ public class AuthUserProcessor {
         executor.sendMessage(
                 chatId,
                 messages.authUserMessage(authUsers, chatId).toString(),
-                InlineKeyboard.bookOrUserButtons(authUserIds, authUserCriteria));
+                inlineKeyboard.bookOrUserButtons(authUserIds, authUserCriteria));
         UserState.setMenuState(chatId, MenuState.UNDEFINED);
 
     }
@@ -147,28 +149,28 @@ public class AuthUserProcessor {
                         "%s %s".formatted(translate.getTranslation("age.correctly", language), Emojis.SAD));
 
             }
-        } else if (Objects.nonNull(text)
-                && text.equals("%s %s"
-                .formatted(Emojis.PHONE, translate.getTranslation("change.phone.number", language)))
+        } else if (
+                Objects.nonNull(text)
+                && text.equals("%s %s".formatted(Emojis.PHONE, translate.getTranslation("change.phone.number", language)))
                 && state.equals(State.UNDEFINED)) {
 
             executor.sendMessage(chatId, "%s %s\n%s".formatted(
                             translate.getTranslation("current.phone.number", language),
                             authUserService.getPhoneNumberByChatId(chatId),
                             translate.getTranslation("new.phone.number", language)),
-                    ReplyKeyboard.sharePhoneNumber(chatId));
+                    replyKeyboard.sharePhoneNumber(chatId));
 
             UserState.setState(chatId, State.CHANGE_NUMBER);
 
-        } else if (Objects.nonNull(text)
-                && text.equals("%s %s"
-                .formatted(Emojis.LIMIT, translate.getTranslation("change.limit", language)))
+        } else if (
+                Objects.nonNull(text)
+                && text.equals("%s %s".formatted(Emojis.LIMIT, translate.getTranslation("change.limit", language)))
                 && state.equals(State.UNDEFINED)) {
 
             executor.sendMessage(
                     chatId,
                     translate.getTranslation("choose.limit", language),
-                    InlineKeyboard.sizeButtons());
+                    inlineKeyboard.sizeButtons());
 
         } else if (state.equals(State.CHANGE_NUMBER)) {
 
@@ -209,7 +211,7 @@ public class AuthUserProcessor {
                             translate.getTranslation("current.language", language),
                             language,
                             translate.getTranslation("new.language", language)),
-                    InlineKeyboard.languageButtons());
+                    inlineKeyboard.languageButtons());
 
             UserState.setState(chatId, State.CHANGE_LANGUAGE);
 
@@ -248,6 +250,9 @@ public class AuthUserProcessor {
         String chatId = message.getChatId().toString();
         String text = message.getText();
         String language = UserState.getLanguage(chatId);
+
+        UserState.setMenuState(chatId, MenuState.ADD_MANAGER);
+
         if (state.equals(State.UNDEFINED)) {
 
             executor.sendMessage(chatId, translate.getTranslation("enter.user.id", language));
@@ -285,7 +290,7 @@ public class AuthUserProcessor {
                 executor.sendMessage(
                         chatId,
                         "%s %s".formatted(Emojis.ADD, translate.getTranslation("user.changed.manager", language)),
-                        ReplyKeyboard.adminMenu(chatId));
+                        replyKeyboard.adminMenu(chatId));
 
             }
 
@@ -298,6 +303,9 @@ public class AuthUserProcessor {
         String chatId = message.getChatId().toString();
         String text = message.getText();
         String language = UserState.getLanguage(chatId);
+
+        UserState.setMenuState(chatId, MenuState.REMOVE_MANAGER);
+
         if (state.equals(State.UNDEFINED)) {
 
             executor.sendMessage(chatId, translate.getTranslation("enter.user.id", language));
@@ -335,7 +343,7 @@ public class AuthUserProcessor {
                 executor.sendMessage(
                         chatId,
                         "%s %s".formatted(Emojis.ADD, translate.getTranslation("user.changed.user", language)),
-                        ReplyKeyboard.adminMenu(chatId));
+                        replyKeyboard.adminMenu(chatId));
 
             }
 

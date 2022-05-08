@@ -5,19 +5,13 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import uz.doston.flyingbookbot.processors.CallbackProcessor;
-import uz.doston.flyingbookbot.processors.MenuProcessor;
-import uz.doston.flyingbookbot.utils.MessageExecutor;
-import uz.doston.flyingbookbot.utils.Translate;
 import uz.doston.flyingbookbot.utils.UserState;
 
 @Component
 @RequiredArgsConstructor
 public class CallbackHandler {
 
-    private final MessageExecutor executor;
-    private final Translate translate;
     private final CallbackProcessor callbackProcessor;
-    private final MenuProcessor menuProcessor;
 
     public void handle(CallbackQuery callbackQuery) {
         Message message = callbackQuery.getMessage();

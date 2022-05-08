@@ -1,6 +1,5 @@
 package uz.doston.flyingbookbot.repository;
 
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,13 +15,15 @@ import java.util.Optional;
 @Repository
 public interface AuthUserRepository extends JpaRepository<AuthUser, Long> {
 
-    AuthRole findAuthRoleByChatId(String chatId);
+    @Query(value = "select au.role from public.auth_user au where au.chat_id = :chatId", nativeQuery = true)
+    AuthRole findAuthRoleByChatId(@Param(value = "chatId") String chatId);
 
     Long countByRole(AuthRole role);
 
     Optional<AuthUser> findByChatId(String chatId);
 
-    Long findIdByChatId(String chatId);
+    @Query(value = "select au.id from public.auth_user au where au.chat_id = :chatId", nativeQuery = true)
+    Long findIdByChatId(@Param(value = "chatId") String chatId);
 
     @Query(
             value = "select au.* from public.auth_user au where au.role = :authRole order by random() limit 1",
@@ -54,12 +55,18 @@ public interface AuthUserRepository extends JpaRepository<AuthUser, Long> {
     )
     AuthRole findAuthRoleByPhoneNumber(@Param(value = "phoneNumber") String phoneNumber);
 
-//    @Query(
-//            value = "select aub.* from public.auth_user au " +
-//                    "inner join public.auth_user_books aub on au.id = aub.auth_user_id " +
-//                    "where au.chat_id = :chatId " +
-//                    "limit :#{#pageable.size} offset :#{#pageable.page}",
-//            nativeQuery = true
-//    )
-//    List<Book> findDownloadedBooksByChatId(@Param(value = "chatId") String chatId, @Param(value = "pageable") Pageable pageable);
+    @Query(
+            value = "select aub.* from public.auth_user au " +
+                    "inner join public.auth_user_books aub " +
+                    "on au.id = aub.auth_user_id" +
+                    " where au.chat_id = :chatId " +
+                    "order by au.created_at desc " +
+                    "limit :size offset :page",
+            nativeQuery = true
+    )
+    List<Book> findDownloadedBooksByChatId(
+            @Param(value = "chatId") String chatId,
+            @Param(value = "page") Integer page,
+            @Param(value = "size") Integer size
+    );
 }

@@ -23,7 +23,7 @@ public class UserState {
 
     public static State getState(String chatId) {
         if (Objects.isNull(STATES.get(chatId))) {
-            setState(chatId, State.USER_ANONYMOUS);
+            setState(chatId, State.UNDEFINED);
         }
         return STATES.get(chatId);
     }
@@ -65,7 +65,7 @@ public class UserState {
 
     public static Integer getSize(String chatId) {
         if (Objects.isNull(SIZES.get(chatId))) {
-            setSize(chatId, 0);
+            setSize(chatId, 5);
         }
         return SIZES.get(chatId);
     }

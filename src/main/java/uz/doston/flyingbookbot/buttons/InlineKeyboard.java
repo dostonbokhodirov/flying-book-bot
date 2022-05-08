@@ -1,6 +1,8 @@
 package uz.doston.flyingbookbot.buttons;
 
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -15,12 +17,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
+@Component
+@RequiredArgsConstructor
 public class InlineKeyboard {
 
-    private static Translate translate;
-    private static final InlineKeyboardMarkup board = new InlineKeyboardMarkup();
+    private final Translate translate;
 
-    public static InlineKeyboardMarkup searchButtons(String chatId) {
+    public InlineKeyboardMarkup searchButtons(String chatId) {
         String language = UserState.getLanguage(chatId);
 
         InlineKeyboardButton genre = getInlineKeyboardButton("%s %s"
@@ -33,14 +37,14 @@ public class InlineKeyboard {
         return getInlineKeyboardMarkup(genre, name);
     }
 
-    public static InlineKeyboardMarkup languageButtons() {
+    public InlineKeyboardMarkup languageButtons() {
         InlineKeyboardButton uz = getInlineKeyboardButton("%s O'zbek".formatted(Emojis.UZ), "uz");
         InlineKeyboardButton ru = getInlineKeyboardButton("%s Русский".formatted(Emojis.RU), "ru");
         InlineKeyboardButton en = getInlineKeyboardButton("%s English".formatted(Emojis.EN), "en");
         return getInlineKeyboardMarkup(uz, ru, en);
     }
 
-    public static ReplyKeyboard genderButtons(String chatId) {
+    public ReplyKeyboard genderButtons(String chatId) {
         String language = UserState.getLanguage(chatId);
 
         InlineKeyboardButton male = getInlineKeyboardButton(
@@ -53,7 +57,7 @@ public class InlineKeyboard {
         return getInlineKeyboardMarkup(male, female);
     }
 
-    public static InlineKeyboardMarkup bookOrUserButtons(List<Long> idList, Criteria criteria) {
+    public InlineKeyboardMarkup bookOrUserButtons(List<Long> idList, Criteria criteria) {
 
         Integer page = criteria.getPage();
         Integer size = criteria.getSize();
@@ -88,7 +92,7 @@ public class InlineKeyboard {
         return board;
     }
 
-//    public static InlineKeyboardMarkup book(ArrayList<Book> books, Integer page, Integer size) {
+//    public InlineKeyboardMarkup book(ArrayList<Book> books, Integer page, Integer size) {
 //        InlineKeyboardMarkup board = new InlineKeyboardMarkup();
 //        List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
 //        List<InlineKeyboardButton> firstNumberButtons = new ArrayList<>();
@@ -153,7 +157,7 @@ public class InlineKeyboard {
 //        return board;
 //    }
 
-    public static List<InlineKeyboardButton> extraButtons(List<Long> idList, Integer page, Integer size) {
+    public List<InlineKeyboardButton> extraButtons(List<Long> idList, Integer page, Integer size) {
         List<InlineKeyboardButton> extraButtons = new ArrayList<>();
         if (page > 0) {
             InlineKeyboardButton prevButton = getInlineKeyboardButton(Emojis.PREVIOUS, "prev");
@@ -168,7 +172,7 @@ public class InlineKeyboard {
         return extraButtons;
     }
 
-    public static InlineKeyboardMarkup genreButtons(String chatId) {
+    public InlineKeyboardMarkup genreButtons(String chatId) {
         String language = UserState.getLanguage(chatId);
 
         InlineKeyboardButton adventure = getInlineKeyboardButton(
@@ -201,14 +205,14 @@ public class InlineKeyboard {
         return new InlineKeyboardMarkup(List.of(row1, row2, row3, row4));
     }
 
-    public static InlineKeyboardMarkup sizeButtons() {
+    public InlineKeyboardMarkup sizeButtons() {
         InlineKeyboardButton five = getInlineKeyboardButton("5️⃣", "five");
         InlineKeyboardButton eight = getInlineKeyboardButton("8️⃣", "eight");
         InlineKeyboardButton ten = getInlineKeyboardButton("\uD83D\uDD1F", "ten");
         return getInlineKeyboardMarkup(five, eight, ten);
     }
 
-    public static ReplyKeyboard documentButtons(String chatId) {
+    public ReplyKeyboard documentButtons(String chatId) {
         MenuState menuState = UserState.getMenuState(chatId);
 
         InlineKeyboardButton button = menuState.equals(MenuState.DOWNLOADED)
@@ -218,11 +222,11 @@ public class InlineKeyboard {
         return getInlineKeyboardMarkup(button, cancel);
     }
 
-    public static InlineKeyboardButton getInlineKeyboardButton(@NonNull String text, @NonNull String callBackData) {
+    public InlineKeyboardButton getInlineKeyboardButton(@NonNull String text, @NonNull String callBackData) {
         return getInlineKeyboardButton(text, callBackData, null);
     }
 
-    public static InlineKeyboardButton getInlineKeyboardButton(@NonNull String text, @NonNull String callBackData, String url) {
+    public InlineKeyboardButton getInlineKeyboardButton(@NonNull String text, @NonNull String callBackData, String url) {
         InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
         inlineKeyboardButton.setText(text);
         inlineKeyboardButton.setCallbackData(callBackData);
@@ -230,13 +234,10 @@ public class InlineKeyboard {
         return inlineKeyboardButton;
     }
 
-    public static InlineKeyboardMarkup getInlineKeyboardMarkup(InlineKeyboardButton... buttons) {
+    public InlineKeyboardMarkup getInlineKeyboardMarkup(InlineKeyboardButton... buttons) {
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
         inlineKeyboardMarkup.setKeyboard(Arrays.stream(buttons).map(List::of).collect(Collectors.toList()));
         return inlineKeyboardMarkup;
     }
 
-    private static List<InlineKeyboardButton> getRow(InlineKeyboardButton... buttons) {
-        return Arrays.stream(buttons).toList();
-    }
 }

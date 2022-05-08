@@ -1,7 +1,6 @@
 package uz.doston.flyingbookbot.handlers;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import uz.doston.flyingbookbot.buttons.InlineKeyboard;
@@ -35,6 +34,9 @@ public class MessageHandler {
     private final MessageExecutor executor;
     private final Translate translate;
 
+    private final InlineKeyboard inlineKeyboard;
+    private final ReplyKeyboard replyKeyboard;
+
     public void handle(Message message) {
         String chatId = message.getChatId().toString();
         String language = UserState.getLanguage(chatId);
@@ -44,72 +46,86 @@ public class MessageHandler {
 
         AuthRole role = authUserService.getRoleByChatId(chatId);
 
-        switch (command) {
-            case "/start":
-                if (Objects.isNull(role)) {
-                    authorizationProcessor.process(message, state);
-                } else {
-                    menuProcessor.sendMainMenu(chatId, role, "<b>%s</b>"
-                            .formatted(translate.getTranslation("choose.menu", language)));
-                }
+        if ("/start".equals(command) || Objects.isNull(role)) {
+            if (Objects.isNull(role)) {
+                authorizationProcessor.process(message, state);
                 return;
-            case "/settings":
-                UserState.setMenuState(chatId, MenuState.SETTINGS);
+            }
+            menuProcessor.sendMainMenu(chatId, role, "<b>%s</b>"
+                    .formatted(translate.getTranslation("choose.menu", language)));
+            return;
+        } else if ("/settings".equals(command)) {
+            UserState.setMenuState(chatId, MenuState.SETTINGS);
 
-                executor.sendMessage(
-                        chatId,
-                        "<b>%s</b>".formatted(translate.getTranslation("settings.menu", language)),
-                        ReplyKeyboard.settingsMenu(chatId));
-                return;
-            case "/help":
-                executor.sendMessage(chatId, messages.helpMessage(chatId));
-                return;
-            case "/search":
-                executor.sendMessage(
-                        chatId,
-                        translate.getTranslation("choose.search.type", language),
-                        InlineKeyboard.searchButtons(chatId));
+            executor.sendMessage(
+                    chatId,
+                    "<b>%s</b>".formatted(translate.getTranslation("settings.menu", language)),
+                    replyKeyboard.settingsMenu(chatId));
+            return;
 
-                UserState.setMenuState(chatId, MenuState.SEARCH);
+        } else if ("/help".equals(command)) {
+
+            executor.sendMessage(chatId, messages.helpMessage(chatId));
+            return;
+
+        } else if ("/search".equals(command)) {
+
+            executor.sendMessage(
+                    chatId,
+                    translate.getTranslation("choose.search.type", language),
+                    inlineKeyboard.searchButtons(chatId));
+
+            UserState.setMenuState(chatId, MenuState.SEARCH);
+            UserState.setPage(chatId, 0);
+            return;
+
+        } else if ("/top".equals(command)) {
+
+            UserState.setMenuState(chatId, MenuState.TOP);
+            bookProcessor.topBookProcess(message);
+            return;
+
+        } else if ("/users".equals(command)) {
+
+            if (!role.equals(AuthRole.USER)) {
+                UserState.setMenuState(chatId, MenuState.USER_LIST);
                 UserState.setPage(chatId, 0);
-                return;
-            case "/top":
-                UserState.setMenuState(chatId, MenuState.TOP);
-                bookProcessor.topBookProcess(message);
-                return;
-            case "/users":
-                if (!role.equals(AuthRole.USER)) {
-                    UserState.setMenuState(chatId, MenuState.USER_LIST);
-                    UserState.setPage(chatId, 0);
-                    authUserProcessor.process(message);
-                }
-                return;
-            case "/post":
-                if (!role.equals(AuthRole.USER)) {
-                    UserState.setMenuState(chatId, MenuState.POST);
-                    executor.sendMessage(chatId, translate.getTranslation("send.post", language));
-                    return;
-                }
-                break;
-            case "/stats": {
-                StringBuilder text = messages.statsMessage(chatId);
-                executor.sendMessage(chatId, text.toString());
-                return;
+                authUserProcessor.process(message);
             }
-            case "/whoami": {
-                StringBuilder text = authUserService.detailMessage(chatId);
-                executor.sendMessage(chatId, text.toString());
+            return;
+
+        } else if ("/post".equals(command)) {
+
+            if (!role.equals(AuthRole.USER)) {
+
+                UserState.setMenuState(chatId, MenuState.POST);
+                executor.sendMessage(chatId, translate.getTranslation("send.post", language));
                 return;
+
             }
-            case "/developers": {
-                String text = messages.developerMessage(chatId);
-                executor.sendMessage(chatId, text);
-                return;
-            }
+
+        } else if ("/stats".equals(command)) {
+
+            StringBuilder text = messages.statsMessage(chatId);
+            executor.sendMessage(chatId, text.toString());
+            return;
+
+        } else if ("/whoami".equals(command)) {
+
+            StringBuilder text = messages.detailAuthUserMessage(chatId);
+            executor.sendMessage(chatId, text.toString());
+            return;
+
+        } else if ("/developers".equals(command)) {
+
+            String text = messages.developerMessage(chatId);
+            executor.sendMessage(chatId, text);
+            return;
+
         }
 
         switch (menuState) {
-            case UNDEFINED -> menuProcessor.process(message, role); // TODO: 5/6/2022 missed process method in menuProcessor
+            case UNDEFINED -> menuProcessor.process(message, role);
             case SETTINGS -> authUserProcessor.settingsProcess(message, state);
             case ADD_BOOK -> bookProcessor.addBookProcess(message, state, role);
             case SEARCH -> bookProcessor.searchBookProcess(message, state);

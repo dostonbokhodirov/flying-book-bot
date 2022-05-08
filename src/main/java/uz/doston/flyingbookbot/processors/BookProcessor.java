@@ -3,7 +3,6 @@ package uz.doston.flyingbookbot.processors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Document;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResult;
@@ -30,13 +29,12 @@ public class BookProcessor {
 
     private final BookService bookService;
     private final AuthUserService authUserService;
-
     @Lazy
     private final MenuProcessor menuProcessor;
     private final Translate translate;
     private final MessageExecutor executor;
-
     private final Messages messages;
+    private final InlineKeyboard inlineKeyboard;
 
     public void topBookProcess(Message message) {
         String chatId = message.getChatId().toString();
@@ -56,7 +54,7 @@ public class BookProcessor {
         } else {
             String text = messages.bookMessage(books, chatId).toString();
             List<Long> bookIds = books.stream().map(Book::getId).collect(Collectors.toList());
-            executor.sendMessage(chatId, text, InlineKeyboard.bookOrUserButtons(bookIds, bookCriteria));
+            executor.sendMessage(chatId, text, inlineKeyboard.bookOrUserButtons(bookIds, bookCriteria));
         }
     }
 
@@ -67,6 +65,8 @@ public class BookProcessor {
     public void addBookProcess(Message message, State state, AuthRole role) {
         String chatId = message.getChatId().toString();
         String language = UserState.getLanguage(chatId);
+
+        UserState.setMenuState(chatId, MenuState.ADD_BOOK);
 
         if (role.equals(AuthRole.USER)) {
 
@@ -124,7 +124,7 @@ public class BookProcessor {
                     executor.sendMessage(
                             chatId,
                             translate.getTranslation("choose.genre", language),
-                            InlineKeyboard.genreButtons(chatId));
+                            inlineKeyboard.genreButtons(chatId));
 
                     UserState.setState(chatId, State.ADD_GENRE);
 
@@ -159,7 +159,6 @@ public class BookProcessor {
 
             List<Book> books = bookService.getAllByName(bookCriteria);
 
-            SendMessage sendMessage;
             if (books.size() == 0) {
 
                 executor.sendMessage(chatId, translate.getTranslation("no.book.name", language));
@@ -173,7 +172,7 @@ public class BookProcessor {
                 executor.sendMessage(
                         chatId,
                         messages.bookMessage(books, chatId).toString(),
-                        InlineKeyboard.bookOrUserButtons(bookIds, bookCriteria));
+                        inlineKeyboard.bookOrUserButtons(bookIds, bookCriteria));
 
             }
         }
@@ -183,6 +182,8 @@ public class BookProcessor {
         String chatId = message.getChatId().toString();
         String text = message.getText();
         String language = UserState.getLanguage(chatId);
+
+        UserState.setMenuState(chatId, MenuState.REMOVE_BOOK);
 
         if (state.equals(State.UNDEFINED)) {
             executor.sendMessage(chatId, translate.getTranslation("enter.remove.book", language));
@@ -223,6 +224,7 @@ public class BookProcessor {
         String chatId = message.getChatId().toString();
         String language = UserState.getLanguage(chatId);
 
+        UserState.setMenuState(chatId, MenuState.DOWNLOADED);
         UserState.setPage(chatId, 0);
 
         AuthUserCriteria authUserCriteria = AuthUserCriteria
@@ -251,7 +253,7 @@ public class BookProcessor {
             executor.sendMessage(
                     chatId,
                     messages.bookMessage(books, chatId).toString(),
-                    InlineKeyboard.bookOrUserButtons(bookIds, bookCriteria));
+                    inlineKeyboard.bookOrUserButtons(bookIds, bookCriteria));
 
         }
     }
@@ -259,6 +261,8 @@ public class BookProcessor {
     public void uploadedBookProcess(Message message) {
         String chatId = message.getChatId().toString();
         String language = UserState.getLanguage(chatId);
+
+        UserState.setMenuState(chatId, MenuState.UPLOADED);
         UserState.setPage(chatId, 0);
 
         BookCriteria bookCriteria = BookCriteria
@@ -280,7 +284,7 @@ public class BookProcessor {
             executor.sendMessage(
                     chatId,
                     messages.bookMessage(books, chatId).toString(),
-                    InlineKeyboard.bookOrUserButtons(bookIds, bookCriteria));
+                    inlineKeyboard.bookOrUserButtons(bookIds, bookCriteria));
 
         }
     }

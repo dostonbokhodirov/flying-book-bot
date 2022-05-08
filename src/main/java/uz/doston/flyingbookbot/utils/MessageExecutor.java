@@ -31,8 +31,13 @@ public record MessageExecutor(@Lazy FlyingBookBot bot) {
     }
 
     public void sendMessage(@NonNull String chatId, @NonNull String text, ReplyKeyboard replyKeyboard) {
-        SendMessage message = new SendMessage(chatId, text);
-        message.setReplyMarkup(replyKeyboard);
+        SendMessage message = SendMessage
+                .builder()
+                .chatId(chatId)
+                .text(text)
+                .replyMarkup(replyKeyboard)
+                .parseMode("HTML")
+                .build();
         try {
             bot.execute(message);
         } catch (TelegramApiException e) {
@@ -45,11 +50,13 @@ public record MessageExecutor(@Lazy FlyingBookBot bot) {
     }
 
     public void editMessage(@NonNull String chatId, @NonNull Integer messageId, @NonNull String text, InlineKeyboardMarkup replyKeyboard) {
-        EditMessageText message = new EditMessageText();
-        message.setChatId(chatId);
-        message.setMessageId(messageId);
-        message.setText(text);
-        message.setReplyMarkup(replyKeyboard);
+        EditMessageText message = EditMessageText.builder()
+                .chatId(chatId)
+                .messageId(messageId)
+                .text(text)
+                .replyMarkup(replyKeyboard)
+                .parseMode("HTML")
+                .build();
         try {
             bot.execute(message);
         } catch (TelegramApiException e) {
@@ -79,11 +86,14 @@ public record MessageExecutor(@Lazy FlyingBookBot bot) {
 
 
     public void sendDocument(String chatId, String fileId, String caption, ReplyKeyboard replyKeyboard) {
-        SendDocument message = new SendDocument();
-        message.setChatId(chatId);
-        message.setDocument(new InputFile(fileId));
-        message.setReplyMarkup(replyKeyboard);
-        message.setCaption(caption);
+        SendDocument message = SendDocument
+                .builder()
+                .chatId(chatId)
+                .document(new InputFile(fileId))
+                .replyMarkup(replyKeyboard)
+                .caption(caption)
+                .parseMode("HTML")
+                .build();
         try {
             bot.execute(message);
         } catch (TelegramApiException e) {
@@ -105,11 +115,14 @@ public record MessageExecutor(@Lazy FlyingBookBot bot) {
 
 
     public void sendPhoto(String chatId, String fileId, String caption, ReplyKeyboard replyKeyboard) {
-        SendPhoto message = new SendPhoto();
-        message.setChatId(chatId);
-        message.setPhoto(new InputFile(fileId));
-        message.setReplyMarkup(replyKeyboard);
-        message.setCaption(caption);
+        SendPhoto message = SendPhoto
+                .builder()
+                .chatId(chatId)
+                .photo(new InputFile(fileId))
+                .replyMarkup(replyKeyboard)
+                .caption(caption)
+                .parseMode("HTML")
+                .build();
         try {
             bot.execute(message);
         } catch (TelegramApiException e) {
@@ -131,11 +144,13 @@ public record MessageExecutor(@Lazy FlyingBookBot bot) {
 
 
     public void sendVideo(String chatId, String fileId, String caption, ReplyKeyboard replyKeyboard) {
-        SendVideo message = new SendVideo();
-        message.setChatId(chatId);
-        message.setVideo(new InputFile(fileId));
-        message.setReplyMarkup(replyKeyboard);
-        message.setCaption(caption);
+        SendVideo message = SendVideo.builder()
+                .chatId(chatId)
+                .video(new InputFile(fileId))
+                .replyMarkup(replyKeyboard)
+                .caption(caption)
+                .parseMode("HTML")
+                .build();
         try {
             bot.execute(message);
         } catch (TelegramApiException e) {
@@ -157,11 +172,13 @@ public record MessageExecutor(@Lazy FlyingBookBot bot) {
 
 
     public void sendAudio(String chatId, String fileId, String caption, ReplyKeyboard replyKeyboard) {
-        SendAudio message = new SendAudio();
-        message.setChatId(chatId);
-        message.setAudio(new InputFile(fileId));
-        message.setReplyMarkup(replyKeyboard);
-        message.setCaption(caption);
+        SendAudio message = SendAudio.builder()
+                .chatId(chatId)
+                .audio(new InputFile(fileId))
+                .replyMarkup(replyKeyboard)
+                .caption(caption)
+                .parseMode("HTML")
+                .build();
         try {
             bot.execute(message);
         } catch (TelegramApiException e) {

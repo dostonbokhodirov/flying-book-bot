@@ -1,6 +1,9 @@
 package uz.doston.flyingbookbot.buttons;
 
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
@@ -11,10 +14,12 @@ import uz.doston.flyingbookbot.utils.UserState;
 import java.util.Arrays;
 import java.util.List;
 
+@Component
+@RequiredArgsConstructor
 public class ReplyKeyboard {
-    private static Translate translate;
+    private final Translate translate;
 
-    public static ReplyKeyboardMarkup sharePhoneNumber(String chatId) {
+    public ReplyKeyboardMarkup sharePhoneNumber(String chatId) {
         String language = UserState.getLanguage(chatId);
 
         KeyboardButton phone = getKeyboardButton(
@@ -26,7 +31,7 @@ public class ReplyKeyboard {
         return getReplyKeyboardMarkup(List.of(row), true, true, true);
     }
 
-    public static ReplyKeyboardMarkup settingsMenu(String chatId) {
+    public ReplyKeyboardMarkup settingsMenu(String chatId) {
         String language = UserState.getLanguage(chatId);
 
         KeyboardButton name = getKeyboardButton("%s %s"
@@ -50,7 +55,7 @@ public class ReplyKeyboard {
         return getReplyKeyboardMarkup(List.of(row1, row2, row3, row4), true, true, true);
     }
 
-    public static ReplyKeyboardMarkup userMenu(String chatId) {
+    public ReplyKeyboardMarkup userMenu(String chatId) {
         String language = UserState.getLanguage(chatId);
 
         KeyboardButton addBook = getKeyboardButton("%s %s"
@@ -63,7 +68,7 @@ public class ReplyKeyboard {
         return getReplyKeyboardMarkup(List.of(row1), true, true, true);
     }
 
-    public static ReplyKeyboardMarkup managerMenu(String chatId) {
+    public ReplyKeyboardMarkup managerMenu(String chatId) {
         String language = UserState.getLanguage(chatId);
 
         KeyboardButton download = getKeyboardButton("%s %s"
@@ -77,7 +82,7 @@ public class ReplyKeyboard {
         return getReplyKeyboardMarkup(List.of(row1, row2), true, true, true);
     }
 
-    public static ReplyKeyboardMarkup adminMenu(String chatId) {
+    public ReplyKeyboardMarkup adminMenu(String chatId) {
         String language = UserState.getLanguage(chatId);
 
         KeyboardButton addManager = getKeyboardButton("%s %s"
@@ -96,7 +101,7 @@ public class ReplyKeyboard {
         return getReplyKeyboardMarkup(List.of(row1, row2, row3), true, true, true);
     }
 
-    private static KeyboardRow addRemoveBookButtons(String language) {
+    private KeyboardRow addRemoveBookButtons(String language) {
         KeyboardButton addBook = getKeyboardButton("%s %s"
                 .formatted(Emojis.ADD_BOOK, translate.getTranslation("add.book", language)));
         KeyboardButton removeBook = getKeyboardButton("%s %s"
@@ -104,26 +109,26 @@ public class ReplyKeyboard {
         return prepareKeyboardRow(addBook, removeBook);
     }
 
-    private static KeyboardButton getKeyboardButton(@NonNull String text) {
+    private KeyboardButton getKeyboardButton(@NonNull String text) {
         return getKeyboardButton(text, false);
     }
 
-    private static KeyboardButton getKeyboardButton(@NonNull String text, boolean requestContact) {
+    private KeyboardButton getKeyboardButton(@NonNull String text, boolean requestContact) {
         KeyboardButton button = new KeyboardButton();
         button.setText(text);
         button.setRequestContact(requestContact);
         return button;
     }
 
-    private static KeyboardRow prepareKeyboardRow(KeyboardButton... buttons) {
+    private KeyboardRow prepareKeyboardRow(KeyboardButton... buttons) {
         return new KeyboardRow(Arrays.asList(buttons));
     }
 
-    private static ReplyKeyboardMarkup getReplyKeyboardMarkup(@NonNull List<KeyboardRow> keyboards) {
+    private ReplyKeyboardMarkup getReplyKeyboardMarkup(@NonNull List<KeyboardRow> keyboards) {
         return getReplyKeyboardMarkup(keyboards, false, false, false);
     }
 
-    private static ReplyKeyboardMarkup getReplyKeyboardMarkup(
+    private ReplyKeyboardMarkup getReplyKeyboardMarkup(
             @NonNull List<KeyboardRow> keyboards,
             boolean resizeKeyboard,
             boolean oneTimeKeyboard,
