@@ -42,7 +42,7 @@ public class AuthUserProcessor {
                 .build();
 
         List<AuthUser> authUsers = authUserService.getAll(authUserCriteria);
-        List<Long> authUserIds = authUsers.stream().map(AuthUser::getId).collect(Collectors.toList());
+        List<String> authUserIds = authUsers.stream().map(authUser -> "u" + authUser.getId()).toList();
 
         executor.sendMessage(
                 chatId,

@@ -1,5 +1,6 @@
 package uz.doston.flyingbookbot.utils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
@@ -9,14 +10,24 @@ import org.telegram.telegrambots.meta.api.methods.send.*;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
+import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResult;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import uz.doston.flyingbookbot.FlyingBookBot;
 
+import java.util.List;
+import java.util.Objects;
+
 @Slf4j
 @Component
-public record MessageExecutor(@Lazy FlyingBookBot bot) {
+public final class MessageExecutor {
+
+    private final FlyingBookBot bot;
+
+    public MessageExecutor(@Lazy FlyingBookBot bot) {
+        this.bot = bot;
+    }
 
     public void deleteMessage(@NonNull String chatId, @NonNull Integer messageId) {
         try {
@@ -64,7 +75,12 @@ public record MessageExecutor(@Lazy FlyingBookBot bot) {
         }
     }
 
-    public void execute(AnswerInlineQuery message) {
+    public void answerInlineQuery(@NonNull String inlineQueryId, @NonNull List<InlineQueryResult> results) {
+        AnswerInlineQuery message = AnswerInlineQuery
+                .builder()
+                .inlineQueryId(inlineQueryId)
+                .results(results)
+                .build();
         try {
             bot.execute(message);
         } catch (TelegramApiException e) {
@@ -185,5 +201,30 @@ public record MessageExecutor(@Lazy FlyingBookBot bot) {
             log.error(e.getMessage(), e);
         }
     }
+
+    @Lazy
+    public FlyingBookBot bot() {
+        return bot;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) return true;
+        if (obj == null || obj.getClass() != this.getClass()) return false;
+        var that = (MessageExecutor) obj;
+        return Objects.equals(this.bot, that.bot);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(bot);
+    }
+
+    @Override
+    public String toString() {
+        return "MessageExecutor[" +
+                "bot=" + bot + ']';
+    }
+
 
 }

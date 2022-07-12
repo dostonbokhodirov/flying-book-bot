@@ -1,12 +1,15 @@
 package uz.doston.flyingbookbot.processors;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ForceReplyKeyboard;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import uz.doston.flyingbookbot.FlyingBookBot;
 import uz.doston.flyingbookbot.buttons.InlineKeyboard;
 import uz.doston.flyingbookbot.buttons.ReplyKeyboard;
 import uz.doston.flyingbookbot.criteria.AuthUserCriteria;
@@ -25,7 +28,6 @@ import uz.doston.flyingbookbot.utils.*;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -369,7 +371,7 @@ public class CallbackProcessor {
 
             }
 
-            List<Long> bookIds = books.stream().map(Book::getId).collect(Collectors.toList());
+            List<String> bookIds = books.stream().map(book -> "b" + book.getId()).toList();
             executor.editMessage(
                     chatId,
                     messageId,
@@ -385,7 +387,7 @@ public class CallbackProcessor {
                     .build();
 
             books = bookService.getAllTopBooks(bookCriteria);
-            List<Long> bookIds = books.stream().map(Book::getId).collect(Collectors.toList());
+            List<String> bookIds = books.stream().map(book -> "b" + book.getId()).toList();
 
             executor.editMessage(
                     chatId,
@@ -402,7 +404,7 @@ public class CallbackProcessor {
                     .build();
 
             books = bookService.getAllUploadedBooks(bookCriteria, chatId);
-            List<Long> bookIds = books.stream().map(Book::getId).collect(Collectors.toList());
+            List<String> bookIds = books.stream().map(book -> "b" + book.getId()).toList();
 
             executor.editMessage(
                     chatId,
@@ -426,7 +428,7 @@ public class CallbackProcessor {
                     .build();
 
             books = authUserService.getAllDownloadedBooks(authUserCriteria);
-            List<Long> bookIds = books.stream().map(Book::getId).collect(Collectors.toList());
+            List<String> bookIds = books.stream().map(book -> "b" + book.getId()).toList();
 
             executor.editMessage(
                     chatId,
@@ -443,7 +445,7 @@ public class CallbackProcessor {
                     .build();
 
             List<AuthUser> authUsers = authUserService.getAll(authUserCriteria);
-            List<Long> authUserIds = authUsers.stream().map(AuthUser::getId).toList();
+            List<String> authUserIds = authUsers.stream().map(authUser -> "u" + authUser.getId()).toList();
 
             executor.editMessage(
                     chatId,
@@ -544,51 +546,37 @@ public class CallbackProcessor {
         String chatId = message.getChatId().toString();
         Integer messageId = message.getMessageId();
         String language = UserState.getLanguage(chatId);
-
         executor.deleteMessage(chatId, messageId);
-
         if (UserState.getState(chatId).equals(State.ADD_GENRE)) {
-
             BookCreateDTO dto = UserState.getBookCreateDTO(chatId);
             dto.setGenre(data);
             bookService.save(dto);
             UserState.removeBookCreateDTO(chatId);
-
-
             executor.sendMessage(chatId,
                     "%s %s".formatted(Emojis.ADD, translate.getTranslation("file.uploaded", language)));
-
             UserState.setState(chatId, State.UNDEFINED);
             UserState.setMenuState(chatId, MenuState.UNDEFINED);
-
         } else if (UserState.getState(chatId).equals(State.SEARCH_GENRE)) {
-
             UserState.setSearchGenre(chatId, data);
-
             BookCriteria bookCriteria = BookCriteria
                     .childBuilder()
                     .genre(data)
                     .page(UserState.getPage(chatId))
                     .size(UserState.getSize(chatId))
                     .build();
-
             List<Book> books = bookService.getAllByGenre(bookCriteria);
-
             EditMessageText editMessageText = new EditMessageText();
             editMessageText.setMessageId(message.getMessageId());
             editMessageText.setChatId(chatId);
-
             if (books.size() == 0) {
-
 //                executor.editMessage(chatId, messageId, translate.getTranslation("no.book.genre", language));
                 executor.sendMessage(chatId, translate.getTranslation("no.book.genre", language));
                 UserState.setMenuState(chatId, MenuState.UNDEFINED);
                 UserState.setState(chatId, State.UNDEFINED);
 
             } else {
-
                 UserState.setPage(chatId, 0);
-                List<Long> bookIds = books.stream().map(Book::getId).toList();
+                List<String> bookIds = books.stream().map(book -> "b" + book.getId()).toList();
                 bookCriteria = BookCriteria
                         .childBuilder()
                         .page(UserState.getPage(chatId))
@@ -637,21 +625,28 @@ public class CallbackProcessor {
 
     public void documentOrAuthUserProcess(Message message, String data) {
         String chatId = message.getChatId().toString();
-        Book book = bookService.get(data);
-        String fileId = book.getFileId();
-        UserState.setBookId(chatId, book.getFileId());
 
-        if (Objects.isNull(book.getId())) {
-            executor.sendMessage(chatId, messages.detailAuthUserMessage(chatId).toString());
-            return;
-        }
-        if (!UserState.getMenuState(chatId).equals(MenuState.DOWNLOADED)) {
+        if (data.startsWith("b")) {
+
+            data = data.substring(1);
+            Book book = bookService.get(data);
+            String fileId = book.getFileId();
+            UserState.setBookId(chatId, book.getFileId());
+
             // TODO: 5/4/2022 bad approach | use checking book list of user instead of it
-            Book target = bookService.get(data);
-            target.setDownloadsCount(target.getDownloadsCount() + 1);
-            bookService.update(target   );
+            book.setDownloadsCount(book.getDownloadsCount() + 1);
+            bookService.update(book);
+
+            executor.sendDocument(chatId, fileId, inlineKeyboard.documentButtons(chatId));
+
+        } else if (data.startsWith("u")) {
+
+//            data = data.substring(1);
+//            AuthUser authUser = authUserService.get(data);
+
+            executor.sendMessage(chatId, messages.detailAuthUserMessage(chatId).toString());
+
         }
-        executor.sendDocument(chatId, fileId, inlineKeyboard.documentButtons(chatId));
     }
 
 }

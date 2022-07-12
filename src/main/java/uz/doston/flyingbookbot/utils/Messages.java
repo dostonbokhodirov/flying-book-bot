@@ -106,10 +106,10 @@ public class Messages {
         return text;
     }
 
+    // TODO: 5/10/2022 i think it's more clearly that change parameter to AuthUser authUser
     public StringBuilder detailAuthUserMessage(String chatId) {
         String language = UserState.getLanguage(chatId);
         AuthUser authUser = authUserService.getByChatId(chatId);
-
         String id = authUser.getChatId();
         String fullName = authUser.getFullName();
         Integer age = authUser.getAge();
@@ -119,9 +119,7 @@ public class Messages {
         String role = authUser.getRole().toString();
         String userName = authUser.getUserName();
         LocalDateTime createdAt = authUser.getCreatedAt();
-
         StringBuilder stringBuilder = new StringBuilder();
-
         stringBuilder
                 .append("ID: <code>").append(id).append("</code>\n")
                 .append(translate.getTranslation("user.full.name", language))

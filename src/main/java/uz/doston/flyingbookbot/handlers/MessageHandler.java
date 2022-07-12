@@ -30,10 +30,8 @@ public class MessageHandler {
     private final AuthUserProcessor authUserProcessor;
     private final AuthUserService authUserService;
     private final Messages messages;
-
     private final MessageExecutor executor;
     private final Translate translate;
-
     private final InlineKeyboard inlineKeyboard;
     private final ReplyKeyboard replyKeyboard;
 

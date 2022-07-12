@@ -57,7 +57,7 @@ public class InlineKeyboard {
         return getInlineKeyboardMarkup(male, female);
     }
 
-    public InlineKeyboardMarkup bookOrUserButtons(List<Long> idList, Criteria criteria) {
+    public InlineKeyboardMarkup bookOrUserButtons(List<String> idList, Criteria criteria) {
 
         Integer page = criteria.getPage();
         Integer size = criteria.getSize();
@@ -69,7 +69,7 @@ public class InlineKeyboard {
         List<InlineKeyboardButton> secondNumberButtons = new ArrayList<>();
         int i = 1;
         if (idList.size() <= size) {
-            for (Long id : idList) {
+            for (String id : idList) {
                 InlineKeyboardButton button =
                         getInlineKeyboardButton(numbers.get(i++ - 1), String.valueOf(id));
                 firstNumberButtons.add(button);
@@ -157,7 +157,7 @@ public class InlineKeyboard {
 //        return board;
 //    }
 
-    public List<InlineKeyboardButton> extraButtons(List<Long> idList, Integer page, Integer size) {
+    public List<InlineKeyboardButton> extraButtons(List<String> idList, Integer page, Integer size) {
         List<InlineKeyboardButton> extraButtons = new ArrayList<>();
         if (page > 0) {
             InlineKeyboardButton prevButton = getInlineKeyboardButton(Emojis.PREVIOUS, "prev");
@@ -213,6 +213,7 @@ public class InlineKeyboard {
     }
 
     public ReplyKeyboard documentButtons(String chatId) {
+        // TODO: 5/10/2022 bad approach for adding "remove" or "add" buttons | may use book list of authUser instead of it
         MenuState menuState = UserState.getMenuState(chatId);
 
         InlineKeyboardButton button = menuState.equals(MenuState.DOWNLOADED)

@@ -21,7 +21,6 @@ import uz.doston.flyingbookbot.service.BookService;
 import uz.doston.flyingbookbot.utils.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -53,7 +52,7 @@ public class BookProcessor {
             executor.sendMessage(chatId, translate.getTranslation("no.book", language));
         } else {
             String text = messages.bookMessage(books, chatId).toString();
-            List<Long> bookIds = books.stream().map(Book::getId).collect(Collectors.toList());
+            List<String> bookIds = books.stream().map(book -> "b" + book.getId()).toList();
             executor.sendMessage(chatId, text, inlineKeyboard.bookOrUserButtons(bookIds, bookCriteria));
         }
     }
@@ -168,7 +167,7 @@ public class BookProcessor {
             } else {
 
                 UserState.setPage(chatId, 0);
-                List<Long> bookIds = books.stream().map(Book::getId).toList();
+                List<String> bookIds = books.stream().map(book -> "b" + book.getId()).toList();
                 executor.sendMessage(
                         chatId,
                         messages.bookMessage(books, chatId).toString(),
@@ -243,7 +242,7 @@ public class BookProcessor {
 
         } else {
 
-            List<Long> bookIds = books.stream().map(Book::getId).toList();
+            List<String> bookIds = books.stream().map(book -> "b" + book.getId()).toList();
             BookCriteria bookCriteria = BookCriteria
                     .childBuilder()
                     .page(UserState.getPage(chatId))
@@ -280,7 +279,7 @@ public class BookProcessor {
 
         } else {
 
-            List<Long> bookIds = books.stream().map(Book::getId).toList();
+            List<String> bookIds = books.stream().map(book -> "b" + book.getId()).toList();
             executor.sendMessage(
                     chatId,
                     messages.bookMessage(books, chatId).toString(),
