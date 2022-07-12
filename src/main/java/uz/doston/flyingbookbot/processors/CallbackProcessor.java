@@ -1,15 +1,10 @@
 package uz.doston.flyingbookbot.processors;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
-import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ForceReplyKeyboard;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import uz.doston.flyingbookbot.FlyingBookBot;
 import uz.doston.flyingbookbot.buttons.InlineKeyboard;
 import uz.doston.flyingbookbot.buttons.ReplyKeyboard;
 import uz.doston.flyingbookbot.criteria.AuthUserCriteria;
